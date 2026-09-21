@@ -1,0 +1,2150 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Data Comms Flashcard & Match Arena (EGCO 372 Midterm)</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Inter & Sarabun & Chakra Petch -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Inter:wght@400;500;600;700&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Sarabun', 'Inter', 'sans-serif'],
+            display: ['Chakra Petch', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#f0f9ff',
+              100: '#e0f2fe',
+              500: '#0284c7',
+              600: '#0369a1',
+              700: '#075985',
+              900: '#0c4a6e',
+            },
+            accent: {
+              purple: '#8b5cf6',
+              gold: '#f59e0b',
+              emerald: '#10b981',
+              rose: '#f43f5e'
+            }
+          },
+          boxShadow: {
+            'glow-blue': '0 0 20px -3px rgba(14, 165, 233, 0.45)',
+            'glow-gold': '0 0 20px -3px rgba(245, 158, 11, 0.45)',
+            'glow-emerald': '0 0 20px -3px rgba(16, 185, 129, 0.45)',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* 3D Flashcard styles */
+    .perspective-1000 {
+      perspective: 1000px;
+    }
+    .transform-style-3d {
+      transform-style: preserve-3d;
+    }
+    .backface-hidden {
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+    }
+    .rotate-y-180 {
+      transform: rotateY(180deg);
+    }
+    .card-transition {
+      transition: transform 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Custom scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0f172a;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #475569;
+    }
+
+    /* Shake animation for errors */
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-8px); }
+      40%, 80% { transform: translateX(8px); }
+    }
+    .animate-shake {
+      animation: shake 0.45s ease-in-out;
+    }
+
+    /* Pulse glow */
+    @keyframes pulseGlow {
+      0%, 100% { transform: scale(1); filter: brightness(1); }
+      50% { transform: scale(1.02); filter: brightness(1.2); }
+    }
+    .animate-pulse-glow {
+      animation: pulseGlow 1.2s infinite ease-in-out;
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased selection:bg-cyan-500 selection:text-white flex flex-col justify-between">
+  <!-- Top Navigation & Status Bar -->
+  <header class="sticky top-0 z-40 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 shadow-lg">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center space-x-3 cursor-pointer" onclick="switchView('flashcard')">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 to-indigo-600 flex items-center justify-center text-white shadow-glow-blue font-display font-bold text-xl">
+          📡
+        </div>
+        <div>
+          <div class="flex items-center space-x-2">
+            <span class="font-display font-bold text-lg sm:text-xl text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-sky-300 to-indigo-400 tracking-wide">
+              EGCO 372 DATA COMMS
+            </span>
+            <span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/40 hidden sm:inline-block">
+              Midterm Exam Prep
+            </span>
+          </div>
+          <p class="text-xs text-slate-400 hidden sm:block">Flashcard ท่องศัพท์ • จับคู่ชื่อเต็ม • จับคู่นิยามข้อสอบ</p>
+        </div>
+      </div>
+
+      <!-- Mode Selector Tabs -->
+      <nav class="flex items-center bg-slate-950/80 p-1 rounded-xl border border-slate-800 shadow-inner">
+        <button id="nav-flashcard" onclick="switchView('flashcard')" class="nav-btn px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all flex items-center space-x-1.5 bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow">
+          <span>🃏</span>
+          <span class="hidden md:inline">การ์ดคำศัพท์</span>
+          <span class="md:hidden">การ์ด</span>
+        </button>
+        <button id="nav-match-fullname" onclick="switchView('match-fullname')" class="nav-btn px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all flex items-center space-x-1.5 text-slate-300 hover:text-white hover:bg-slate-800/80">
+          <span>🔗</span>
+          <span class="hidden md:inline">จับคู่ชื่อเต็ม</span>
+          <span class="md:hidden">ชื่อเต็ม</span>
+        </button>
+        <button id="nav-match-definition" onclick="switchView('match-definition')" class="nav-btn px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all flex items-center space-x-1.5 text-slate-300 hover:text-white hover:bg-slate-800/80">
+          <span>🎯</span>
+          <span class="hidden md:inline">จับคู่นิยาม</span>
+          <span class="md:hidden">นิยาม</span>
+        </button>
+        <button id="nav-speed-quiz" onclick="switchView('speed-quiz')" class="nav-btn px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all flex items-center space-x-1.5 text-slate-300 hover:text-white hover:bg-slate-800/80">
+          <span>⚡</span>
+          <span class="hidden md:inline">สปีดควิซ</span>
+          <span class="md:hidden">ควิซ</span>
+        </button>
+        <button id="nav-glossary" onclick="switchView('glossary')" class="nav-btn px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all flex items-center space-x-1.5 text-slate-300 hover:text-white hover:bg-slate-800/80">
+          <span>📚</span>
+          <span class="hidden md:inline">คลังศัพท์</span>
+          <span class="md:hidden">คลัง</span>
+        </button>
+      </nav>
+
+      <!-- Audio toggle & Quick Stats -->
+      <div class="flex items-center space-x-2">
+        <button id="audio-toggle-btn" onclick="toggleAudio()" class="w-9 h-9 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 hover:text-amber-400 flex items-center justify-center transition hover:scale-105" title="เปิด/ปิดเสียงเอฟเฟกต์">
+          <span id="audio-icon">🔊</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col">
+    <!-- Filter Bar Component (Used across Flashcard & Glossary) -->
+    <div id="filter-container" class="bg-slate-900/80 backdrop-blur border border-slate-800 rounded-2xl p-3 sm:p-4 mb-6 shadow-sm">
+      <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+        <!-- Category Filter -->
+        <div class="flex items-center gap-2 overflow-x-auto pb-1 lg:pb-0 scrollbar-none">
+          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap pl-1">หมวดหมู่:</span>
+          <button onclick="setFilterCategory('all')" id="cat-btn-all" class="cat-chip active px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap transition bg-cyan-500 text-white">
+            ทั้งหมด (<span id="count-all">0</span>)
+          </button>
+          <button onclick="setFilterCategory('tophit')" id="cat-btn-tophit" class="cat-chip px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap transition bg-slate-800 text-slate-300 hover:bg-slate-700 border border-amber-500/30">
+            🔥 15 Top Hits
+          </button>
+          <button onclick="setFilterCategory('ch1')" id="cat-btn-ch1" class="cat-chip px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap transition bg-slate-800 text-slate-300 hover:bg-slate-700">
+            1. Information & Coding
+          </button>
+          <button onclick="setFilterCategory('ch2')" id="cat-btn-ch2" class="cat-chip px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap transition bg-slate-800 text-slate-300 hover:bg-slate-700">
+            2. Signal & Transmission
+          </button>
+          <button onclick="setFilterCategory('ch3')" id="cat-btn-ch3" class="cat-chip px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap transition bg-slate-800 text-slate-300 hover:bg-slate-700">
+            3. Modulation & MUX
+          </button>
+          <button onclick="setFilterCategory('ch4')" id="cat-btn-ch4" class="cat-chip px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap transition bg-slate-800 text-slate-300 hover:bg-slate-700">
+            4. Switching & Delays
+          </button>
+          <button onclick="setFilterCategory('ch5')" id="cat-btn-ch5" class="cat-chip px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap transition bg-slate-800 text-slate-300 hover:bg-slate-700">
+            5. Modes & Topologies
+          </button>
+          <button onclick="setFilterCategory('ch6')" id="cat-btn-ch6" class="cat-chip px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap transition bg-slate-800 text-slate-300 hover:bg-slate-700">
+            6. Error Control
+          </button>
+          <button onclick="setFilterCategory('ch7')" id="cat-btn-ch7" class="cat-chip px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap transition bg-slate-800 text-slate-300 hover:bg-slate-700">
+            7. OSI & Devices
+          </button>
+        </div>
+
+        <!-- Priority / Search Filters -->
+        <div class="flex items-center gap-2">
+          <!-- Priority Filter -->
+          <div class="flex items-center bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs">
+            <button onclick="setFilterPriority('all')" id="prio-all" class="prio-btn active px-2 py-1 rounded-lg bg-slate-800 text-cyan-400 font-semibold">ทุกระดับ</button>
+            <button onclick="setFilterPriority('top')" id="prio-top" class="prio-btn px-2 py-1 rounded-lg text-slate-400 hover:text-amber-400">🔥 Top Hit</button>
+            <button onclick="setFilterPriority('past')" id="prio-past" class="prio-btn px-2 py-1 rounded-lg text-slate-400 hover:text-amber-300">⭐ เคยออกสอบ</button>
+            <button onclick="setFilterPriority('key')" id="prio-key" class="prio-btn px-2 py-1 rounded-lg text-slate-400 hover:text-sky-400">📌 คีย์เวิร์ด</button>
+          </div>
+
+          <!-- Search Input -->
+          <div class="relative flex-grow sm:w-48 lg:w-56">
+            <input type="text" id="filter-search" oninput="onSearchChange(this.value)" placeholder="ค้นหาคำศัพท์ / นิยาม..." class="w-full bg-slate-950 border border-slate-700/80 rounded-xl px-3 py-1.5 text-xs sm:text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500">
+            <span class="absolute right-2.5 top-2 text-xs text-slate-500">🔍</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= VIEW 1: FLASHCARD MODE ================= -->
+    <section id="view-flashcard" class="view-section flex-1 flex flex-col items-center justify-center">
+      <!-- Progress and Status -->
+      <div class="w-full max-w-xl flex items-center justify-between text-xs text-slate-400 mb-3 px-2">
+        <div class="flex items-center space-x-2">
+          <span class="font-display font-semibold text-cyan-400">บัตรที่: <span id="fc-current-index" class="text-white text-base">1</span> / <span id="fc-total-count">15</span></span>
+          <span id="fc-priority-badge" class="px-2 py-0.5 rounded-md text-[11px] font-bold bg-rose-500/20 text-rose-400 border border-rose-500/30">🔥 Top Hit</span>
+        </div>
+        <div class="flex items-center space-x-3">
+          <span class="text-emerald-400">✓ จำได้: <strong id="fc-mastered-count" class="text-white">0</strong></span>
+          <span class="text-amber-400">↻ ทบทวน: <strong id="fc-review-count" class="text-white">0</strong></span>
+        </div>
+      </div>
+
+      <!-- Linear Progress Bar -->
+      <div class="w-full max-w-xl bg-slate-900 rounded-full h-1.5 mb-6 overflow-hidden border border-slate-800">
+        <div id="fc-progress-bar" class="bg-gradient-to-r from-cyan-500 to-indigo-500 h-full rounded-full transition-all duration-300" style="width: 6.6%"></div>
+      </div>
+
+      <!-- 3D Flashcard Container -->
+      <div class="w-full max-w-xl h-96 sm:h-[420px] perspective-1000 cursor-pointer select-none" onclick="flipCurrentCard()">
+        <div id="flashcard-element" class="w-full h-full relative transform-style-3d card-transition rounded-3xl shadow-2xl">
+          
+          <!-- Front Face (Term / Acronym) -->
+          <div class="absolute inset-0 backface-hidden bg-gradient-to-br from-slate-900 via-slate-850 to-slate-900 border-2 border-cyan-500/30 rounded-3xl p-6 sm:p-8 flex flex-col justify-between shadow-glow-blue hover:border-cyan-400/60 transition-colors">
+            <div class="flex items-center justify-between">
+              <span id="fc-front-chapter" class="text-xs font-mono uppercase tracking-wider px-3 py-1 rounded-full bg-cyan-950/80 text-cyan-400 border border-cyan-800">
+                หมวดที่ 1: Information Theory
+              </span>
+              <div class="flex items-center space-x-2">
+                <button onclick="speakTerm(event)" class="p-2 rounded-xl bg-slate-800/80 hover:bg-cyan-900/60 text-slate-300 hover:text-cyan-300 transition text-sm" title="ฟังเสียงอ่านภาษาอังกฤษ">
+                  🔊
+                </button>
+                <span class="text-xs text-slate-400 font-mono">แตะเพื่อดูเฉลย 🔄</span>
+              </div>
+            </div>
+
+            <div class="text-center my-auto px-4">
+              <span class="text-xs sm:text-sm font-semibold text-cyan-400 tracking-wider uppercase mb-2 block">คำศัพท์ / คำย่อที่ต้องจำ</span>
+              <h2 id="fc-front-term" class="text-3xl sm:text-4xl lg:text-5xl font-extrabold font-display text-white tracking-tight drop-shadow-md">
+                PCM
+              </h2>
+              <p id="fc-front-hint" class="text-slate-400 text-sm sm:text-base mt-4 font-normal">
+                (Pulse Code Modulation)
+              </p>
+              <div id="fc-front-exam-badge" class="mt-4 inline-flex items-center space-x-1.5 px-3 py-1 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs font-medium">
+                <span>📝 สถิติข้อสอบ:</span>
+                <span id="fc-front-stats">ปี 2557, 2560, 2563, 2564</span>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between text-xs text-slate-500 border-t border-slate-800/80 pt-3">
+              <span>💡 คลิกหรือแตะการ์ดเพื่อพลิกดู "ชื่อเต็ม" และ "นิยามคีย์เวิร์ด"</span>
+              <span>[Spacebar] พลิก</span>
+            </div>
+          </div>
+
+          <!-- Back Face (Full Name & Definition) -->
+          <div class="absolute inset-0 backface-hidden rotate-y-180 bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-950 border-2 border-indigo-500/40 rounded-3xl p-6 sm:p-8 flex flex-col justify-between shadow-2xl overflow-y-auto">
+            <div class="flex items-center justify-between">
+              <span id="fc-back-chapter" class="text-xs font-mono uppercase tracking-wider px-3 py-1 rounded-full bg-indigo-950/80 text-indigo-300 border border-indigo-800">
+                หมวดที่ 1
+              </span>
+              <div class="flex items-center space-x-2">
+                <span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                  นิยามสำหรับข้อสอบอัตนัย
+                </span>
+                <button onclick="speakFullName(event)" class="p-2 rounded-xl bg-slate-800/80 hover:bg-indigo-900/60 text-slate-300 hover:text-indigo-300 transition text-sm" title="ฟังการออกเสียงชื่อเต็ม">
+                  🔊
+                </button>
+              </div>
+            </div>
+
+            <div class="my-auto py-2">
+              <div class="border-b border-indigo-500/20 pb-3 mb-3">
+                <span class="text-xs text-indigo-400 font-semibold uppercase tracking-wider block mb-1">ชื่อเต็มภาษาอังกฤษ:</span>
+                <h3 id="fc-back-fullname" class="text-xl sm:text-2xl font-bold font-display text-transparent bg-clip-text bg-gradient-to-r from-sky-300 via-indigo-200 to-pink-300">
+                  Pulse Code Modulation
+                </h3>
+              </div>
+
+              <div>
+                <span class="text-xs text-emerald-400 font-semibold uppercase tracking-wider block mb-1">คีย์เวิร์ด & นิยามที่ผู้ตรวจให้คะแนน:</span>
+                <p id="fc-back-definition" class="text-slate-200 text-sm sm:text-base leading-relaxed bg-slate-950/60 p-3.5 rounded-xl border border-slate-800 font-normal">
+                  กระบวนการแปลงสัญญาณแอนะล็อกให้เป็นสัญญาณดิจิทัล ประกอบด้วย 3 ขั้นตอนหลักตามลำดับ คือ 1. Sampling (สุ่มตัวอย่าง) 2. Quantization (แบ่งระดับขั้น) และ 3. Encoding (แปลงเป็นเลขฐานสอง)
+                </p>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between text-xs text-slate-400 border-t border-slate-800/80 pt-3">
+              <span id="fc-back-formula" class="text-amber-300/90 font-mono text-[11px]">สูตร: f_s >= 2 * f_max</span>
+              <span class="text-slate-500">แตะเพื่อพลิกกลับ 🔄</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Action Buttons (Memorized / Review / Next / Prev) -->
+      <div class="w-full max-w-xl flex flex-wrap items-center justify-between gap-3 mt-6">
+        <div class="flex items-center space-x-2">
+          <button onclick="prevCard()" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium text-sm transition flex items-center space-x-1.5 border border-slate-700 active:scale-95 shadow">
+            <span>←</span>
+            <span>ก่อนหน้า</span>
+          </button>
+          <button onclick="shuffleCards()" class="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-cyan-400 font-medium text-sm transition border border-slate-700 active:scale-95" title="สุ่มลำดับการ์ด">
+            🔀
+          </button>
+        </div>
+
+        <div class="flex items-center space-x-2">
+          <button onclick="markCard(false)" class="px-4 py-2.5 rounded-xl bg-amber-950/50 hover:bg-amber-900/70 text-amber-300 border border-amber-700/60 font-medium text-sm transition active:scale-95 flex items-center space-x-1">
+            <span>↻</span>
+            <span>ยังจำไม่ได้</span>
+          </button>
+          <button onclick="markCard(true)" class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-sm transition shadow-glow-emerald active:scale-95 flex items-center space-x-1">
+            <span>✓</span>
+            <span>จำได้แม่นแล้ว</span>
+          </button>
+        </div>
+
+        <button onclick="nextCard()" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium text-sm transition flex items-center space-x-1.5 border border-slate-700 active:scale-95 shadow">
+          <span>ถัดไป</span>
+          <span>→</span>
+        </button>
+      </div>
+
+      <!-- Keyboard shortcuts guide -->
+      <p class="text-xs text-slate-500 mt-4 text-center hidden sm:block">
+        ⌨️ คีย์ลัด: <kbd class="px-1.5 py-0.5 bg-slate-800 rounded border border-slate-700 text-slate-300">Space</kbd> พลิกการ์ด • <kbd class="px-1.5 py-0.5 bg-slate-800 rounded border border-slate-700 text-slate-300">←</kbd> <kbd class="px-1.5 py-0.5 bg-slate-800 rounded border border-slate-700 text-slate-300">→</kbd> เลื่อนการ์ด • <kbd class="px-1.5 py-0.5 bg-slate-800 rounded border border-slate-700 text-slate-300">1</kbd> ยังจำไม่ได้ • <kbd class="px-1.5 py-0.5 bg-slate-800 rounded border border-slate-700 text-slate-300">2</kbd> จำได้แล้ว
+      </p>
+    </section>
+
+    <!-- ================= VIEW 2: MATCH FULL NAME MODE ================= -->
+    <section id="view-match-fullname" class="view-section hidden flex-1 flex flex-col items-center">
+      <!-- Game Info Header -->
+      <div class="w-full max-w-4xl bg-slate-900/90 border border-slate-800 rounded-2xl p-4 mb-6 flex flex-wrap items-center justify-between gap-4 shadow-md">
+        <div class="flex items-center space-x-3">
+          <div class="p-2.5 bg-indigo-500/20 text-indigo-400 rounded-xl text-xl">🔗</div>
+          <div>
+            <h3 class="font-display font-bold text-base sm:text-lg text-white">จับคู่คำย่อ ↔ ชื่อเต็มภาษาอังกฤษ</h3>
+            <p class="text-xs text-slate-400">แตะคู่ที่ถูกต้องเพื่อจับคู่ให้ครบทั้งกระดาน! (รอบละ 6 คู่)</p>
+          </div>
+        </div>
+
+        <div class="flex items-center space-x-4 text-sm font-display">
+          <div class="text-center">
+            <span class="text-xs text-slate-400 block">คู่ที่จับแล้ว</span>
+            <span id="mfn-matches-count" class="text-lg font-bold text-cyan-400">0 / 6</span>
+          </div>
+          <div class="text-center">
+            <span class="text-xs text-slate-400 block">คอมโบ</span>
+            <span id="mfn-combo" class="text-lg font-bold text-amber-400">0x 🔥</span>
+          </div>
+          <div class="text-center">
+            <span class="text-xs text-slate-400 block">เวลา</span>
+            <span id="mfn-timer" class="text-lg font-mono font-bold text-white">00:00</span>
+          </div>
+          <button onclick="startMatchFullNameGame()" class="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs shadow transition active:scale-95">
+            ↻ เล่นใหม่ / สุ่มรอบ
+          </button>
+        </div>
+      </div>
+
+      <!-- Match Tiles Grid Container -->
+      <div id="mfn-grid" class="w-full max-w-4xl grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4 flex-1">
+        <!-- Dynamically generated match tiles -->
+      </div>
+
+      <!-- Round Victory Modal / Overlay -->
+      <div id="mfn-victory-banner" class="hidden w-full max-w-xl bg-gradient-to-br from-emerald-900/90 via-slate-900 to-indigo-950 border-2 border-emerald-500/50 rounded-3xl p-6 sm:p-8 text-center my-6 shadow-2xl animate-fade-in">
+        <div class="text-5xl mb-3">🎉 🏆</div>
+        <h4 class="text-2xl sm:text-3xl font-bold font-display text-white mb-2">ยอดเยี่ยมมาก! จับคู่ครบทุกตัวแล้ว</h4>
+        <p class="text-slate-300 text-sm mb-4">ใช้เวลาไป <span id="mfn-final-time" class="text-emerald-300 font-bold font-mono">00:24</span> นาที ด้วยความแม่นยำสูง!</p>
+        <div class="flex justify-center space-x-3">
+          <button onclick="startMatchFullNameGame()" class="px-6 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-sm shadow-glow-emerald transition">
+            เล่นรอบถัดไป ➔
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= VIEW 3: MATCH DEFINITION MODE ================= -->
+    <section id="view-match-definition" class="view-section hidden flex-1 flex flex-col items-center">
+      <!-- Game Info Header -->
+      <div class="w-full max-w-4xl bg-slate-900/90 border border-slate-800 rounded-2xl p-4 mb-6 flex flex-wrap items-center justify-between gap-4 shadow-md">
+        <div class="flex items-center space-x-3">
+          <div class="p-2.5 bg-rose-500/20 text-rose-400 rounded-xl text-xl">🎯</div>
+          <div>
+            <h3 class="font-display font-bold text-base sm:text-lg text-white">จับคู่คำศัพท์ ↔ นิยาม & คีย์เวิร์ดข้อสอบ</h3>
+            <p class="text-xs text-slate-400">เลือกคำศัพท์ในฝั่งซ้าย และแตะนิยามที่ถูกต้องในฝั่งขวา (รอบละ 4 คู่)</p>
+          </div>
+        </div>
+
+        <div class="flex items-center space-x-4 text-sm font-display">
+          <div class="text-center">
+            <span class="text-xs text-slate-400 block">คู่ที่สำเร็จ</span>
+            <span id="mdef-matches-count" class="text-lg font-bold text-rose-400">0 / 4</span>
+          </div>
+          <div class="text-center">
+            <span class="text-xs text-slate-400 block">คอมโบ</span>
+            <span id="mdef-combo" class="text-lg font-bold text-amber-400">0x 🔥</span>
+          </div>
+          <div class="text-center">
+            <span class="text-xs text-slate-400 block">เวลา</span>
+            <span id="mdef-timer" class="text-lg font-mono font-bold text-white">00:00</span>
+          </div>
+          <button onclick="startMatchDefinitionGame()" class="px-3.5 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-medium text-xs shadow transition active:scale-95">
+            ↻ สุ่มคำใหม่
+          </button>
+        </div>
+      </div>
+
+      <!-- Two-Column Match Arena -->
+      <div class="w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 flex-1">
+        <!-- Left Column: Terms -->
+        <div class="flex flex-col space-y-3">
+          <div class="flex items-center justify-between px-2 text-xs font-semibold text-slate-400 uppercase tracking-wider">
+            <span>1. เลือกคำศัพท์ (Term)</span>
+            <span class="text-cyan-400">แตะ 1 การ์ด</span>
+          </div>
+          <div id="mdef-terms-col" class="flex flex-col space-y-3">
+            <!-- Dynamically populated term buttons -->
+          </div>
+        </div>
+
+        <!-- Right Column: Definitions -->
+        <div class="flex flex-col space-y-3">
+          <div class="flex items-center justify-between px-2 text-xs font-semibold text-slate-400 uppercase tracking-wider">
+            <span>2. เลือกนิยามที่คู่กัน (Definition)</span>
+            <span class="text-pink-400">แตะเพื่อจับคู่</span>
+          </div>
+          <div id="mdef-defs-col" class="flex flex-col space-y-3">
+            <!-- Dynamically populated definition buttons -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Victory Banner for Definition Match -->
+      <div id="mdef-victory-banner" class="hidden w-full max-w-xl bg-gradient-to-br from-rose-950/80 via-slate-900 to-indigo-950 border-2 border-rose-500/50 rounded-3xl p-6 sm:p-8 text-center my-6 shadow-2xl">
+        <div class="text-5xl mb-3">🌟 💯</div>
+        <h4 class="text-2xl sm:text-3xl font-bold font-display text-white mb-2">เฉียบขาดมาก! เคลียร์นิยามสำเร็จ</h4>
+        <p class="text-slate-300 text-sm mb-4">คุณจับคู่นิยามครบทั้ง 4 ข้อในเวลา <span id="mdef-final-time" class="text-amber-300 font-bold font-mono">00:18</span> นาที</p>
+        <div class="flex justify-center space-x-3">
+          <button onclick="startMatchDefinitionGame()" class="px-6 py-3 rounded-xl bg-rose-500 hover:bg-rose-400 text-white font-bold text-sm shadow transition">
+            เล่นรอบถัดไป ➔
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= VIEW 4: SPEED QUIZ MODE ================= -->
+    <section id="view-speed-quiz" class="view-section hidden flex-1 flex flex-col items-center">
+      <!-- Quiz Header & Scoreboard -->
+      <div class="w-full max-w-2xl bg-slate-900/90 border border-slate-800 rounded-2xl p-4 mb-6 flex items-center justify-between shadow-md">
+        <div>
+          <span class="text-xs text-slate-400 uppercase tracking-wider font-semibold">คำถามข้อที่</span>
+          <div class="font-display font-bold text-xl text-white">
+            <span id="sq-question-num" class="text-cyan-400">1</span> / <span id="sq-total-num">10</span>
+          </div>
+        </div>
+        <div class="text-center">
+          <span class="text-xs text-slate-400 uppercase tracking-wider font-semibold">คะแนนสะสม</span>
+          <div id="sq-score" class="font-display font-extrabold text-2xl text-amber-400">0</div>
+        </div>
+        <div class="text-right">
+          <span class="text-xs text-slate-400 uppercase tracking-wider font-semibold">คอมโบ</span>
+          <div id="sq-combo" class="font-display font-bold text-lg text-emerald-400">0x 🔥</div>
+        </div>
+      </div>
+
+      <!-- Quiz Card -->
+      <div id="sq-card-box" class="w-full max-w-2xl bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl relative overflow-hidden">
+        <!-- Question Type Badge -->
+        <div class="flex items-center justify-between mb-4">
+          <span id="sq-type-badge" class="px-3 py-1 rounded-full text-xs font-semibold bg-indigo-500/20 text-indigo-300 border border-indigo-500/40 font-mono">
+            ทายชื่อเต็ม (Full Name)
+          </span>
+          <span id="sq-cat-badge" class="text-xs text-slate-400 font-mono">
+            หมวดที่ 2: Signal Conversion
+          </span>
+        </div>
+
+        <!-- Question Prompt -->
+        <div class="mb-6">
+          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-2" id="sq-prompt-sub">
+            คำศัพท์นี้มีชื่อเต็มว่าอย่างไร?
+          </span>
+          <h3 id="sq-prompt-title" class="text-2xl sm:text-3xl font-extrabold font-display text-white tracking-wide">
+            PCM
+          </h3>
+        </div>
+
+        <!-- 4 Multiple Choice Options -->
+        <div id="sq-options-container" class="grid grid-cols-1 gap-3">
+          <!-- Dynamically inserted choice buttons -->
+        </div>
+
+        <!-- Answer Explanation Box (Hidden until answered) -->
+        <div id="sq-explanation-box" class="hidden mt-6 pt-4 border-t border-slate-800 text-sm">
+          <div class="flex items-start space-x-2">
+            <span class="text-lg">💡</span>
+            <div class="text-slate-300">
+              <span class="font-bold text-cyan-300 block mb-1">เฉลย & สรุปเนื้อหา:</span>
+              <p id="sq-explanation-text" class="text-xs sm:text-sm leading-relaxed text-slate-300"></p>
+            </div>
+          </div>
+          <div class="mt-4 flex justify-end">
+            <button onclick="nextQuizQuestion()" class="px-5 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-sm shadow transition active:scale-95">
+              ข้อถัดไป ➔
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quiz Summary Modal -->
+      <div id="sq-summary-modal" class="hidden w-full max-w-md bg-gradient-to-b from-slate-900 to-indigo-950 border-2 border-cyan-500/50 rounded-3xl p-6 sm:p-8 text-center my-6 shadow-2xl">
+        <div class="text-5xl mb-3">🎓 ⭐</div>
+        <h4 class="text-2xl font-bold font-display text-white mb-1">จบการทดสอบ Speed Quiz!</h4>
+        <p class="text-slate-400 text-xs mb-6">คุณได้คะแนนทดสอบตามเกณฑ์ข้อสอบจริง</p>
+        
+        <div class="bg-slate-950/80 rounded-2xl p-4 border border-slate-800 mb-6 flex justify-around">
+          <div>
+            <span class="text-xs text-slate-500 block">คะแนนรวม</span>
+            <span id="sq-final-score" class="text-3xl font-extrabold text-amber-400 font-display">800</span>
+          </div>
+          <div class="border-r border-slate-800"></div>
+          <div>
+            <span class="text-xs text-slate-500 block">ตอบถูก</span>
+            <span id="sq-final-correct" class="text-3xl font-extrabold text-emerald-400 font-display">8/10</span>
+          </div>
+        </div>
+
+        <button onclick="startSpeedQuiz()" class="w-full py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold text-sm shadow-glow-blue transition">
+          เริ่มควิซชุดใหม่ ↻
+        </button>
+      </div>
+    </section>
+
+    <!-- ================= VIEW 5: GLOSSARY & SEARCH MODE ================= -->
+    <section id="view-glossary" class="view-section hidden flex-1 flex flex-col">
+      <div class="flex items-center justify-between mb-4">
+        <div>
+          <h3 class="font-display font-bold text-xl text-white">คลังคำศัพท์และนิยามฉบับเน้นสอบ Midterm</h3>
+          <p class="text-xs text-slate-400">ค้นหาได้ทั้งภาษาไทยและอังกฤษ พร้อมสถิติปีที่เคยออกสอบจริง</p>
+        </div>
+        <span class="text-xs font-mono text-cyan-400 bg-cyan-950/80 px-3 py-1 rounded-full border border-cyan-800">
+          แสดง <span id="glossary-visible-count">0</span> รายการ
+        </span>
+      </div>
+
+      <!-- Glossary Table/Cards Grid -->
+      <div id="glossary-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <!-- Dynamically rendered glossary cards -->
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-slate-950 border-t border-slate-900 py-4 text-center text-xs text-slate-500">
+    <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+      <span>วิชา EGCO 372: Data Communications and Computer Networks (Midterm Review)</span>
+      <span>พัฒนาเพื่อการทบทวนข้อสอบอย่างมีประสิทธิภาพ • รองรับ Desktop, Tablet และ Mobile</span>
+    </div>
+  </footer>
+
+  <!-- Notification Toast Container -->
+  <div id="toast-container" class="fixed bottom-6 right-6 z-50 flex flex-col space-y-2 pointer-events-none"></div>
+
+  <script>
+    /**
+     * EGCO 372 Data Communications & Computer Networks Midterm Database
+     * Comprehensive vocabulary extracted directly from the Midterm Glossary.
+     */
+    const VOCAB_DATA = [
+      // --- หมวดที่ 1: Information Theory & Source Coding ---
+      {
+        id: "self-info",
+        term: "Self-Information",
+        fullName: "Self-Information",
+        category: "ch1",
+        categoryName: "1. Information Theory & Coding",
+        priority: "key",
+        examStats: "คีย์เวิร์ดสำคัญ",
+        formula: "I(m_k) = log2(1 / P(m_k)) bits",
+        definition: "ปริมาณสารสนเทศที่ได้รับเมื่อเกิดเหตุการณ์ขึ้นเดี่ยวๆ เหตุการณ์ที่มีความน่าจะเป็นต่ำจะให้สารสนเทศสูง หากเป็นเหตุการณ์ที่แน่นอน 100% จะให้สารสนเทศเป็น 0",
+        hint: "ปริมาณข้อมูลที่ได้รับจาก 1 เหตุการณ์เดี่ยวๆ"
+      },
+      {
+        id: "entropy",
+        term: "Entropy",
+        fullName: "Information Entropy",
+        category: "ch1",
+        categoryName: "1. Information Theory & Coding",
+        priority: "key",
+        examStats: "คีย์เวิร์ดสำคัญ",
+        formula: "H(S) = Σ P_i * log2(1 / P_i) bits/symbol",
+        definition: "ค่าเฉลี่ยของปริมาณสารสนเทศทั้งหมดของแหล่งกำเนิดข้อมูล เป็นขีดจำกัดทางทฤษฎีของความยาวรหัสคำเฉลี่ยต่ำสุดในการบีบอัดข้อมูลโดยไม่สูญเสียเนื้อหา",
+        hint: "ค่าเฉลี่ยสารสนเทศทั้งหมด / ขีดจำกัดบีบอัดต่ำสุด"
+      },
+      {
+        id: "source-coding",
+        term: "Source Coding",
+        fullName: "Source Coding",
+        category: "ch1",
+        categoryName: "1. Information Theory & Coding",
+        priority: "top",
+        examStats: "2557, 2560, 2563, 2564",
+        formula: "Data compression / Redundancy reduction",
+        definition: "กระบวนการแปลงข้อมูลจากแหล่งกำเนิดให้อยู่ในรูปรหัสดิจิทัล มีจุดประสงค์เพื่อบีบอัดข้อมูล (Data Compression) กำจัดความซ้ำซ้อน (Redundancy) เพื่อลดจำนวนบิตและอัตราบิต (Bit rate)",
+        hint: "บีบอัดข้อมูล ลด redundancy ลด bit rate"
+      },
+      {
+        id: "uniquely-decodable",
+        term: "Uniquely Decodable Code",
+        fullName: "Uniquely Decodable Code",
+        category: "ch1",
+        categoryName: "1. Information Theory & Coding",
+        priority: "top",
+        examStats: "2560, 2564, ข้อสอบจริง",
+        formula: "Prefix-free code เป็นเงื่อนไขเพียงพอ",
+        definition: "รหัสที่เมื่อนำรหัสคำ (Codeword) มาต่อเป็นสายบิตยาว ผู้รับสามารถแยกแยะและถอดรหัสย้อนกลับมาเป็นสัญลักษณ์ต้นฉบับได้เพียงแบบเดียวเสมอ โดยไม่กำกวมหรือคลุมเครือ",
+        hint: "ถอดรหัสได้แบบเดียวเสมอ ไม่มีความกำกวม"
+      },
+      {
+        id: "prefix-free",
+        term: "Prefix-free Code",
+        fullName: "Prefix-free Code (Prefix Code)",
+        category: "ch1",
+        categoryName: "1. Information Theory & Coding",
+        priority: "key",
+        examStats: "คีย์เวิร์ดสำคัญ",
+        formula: "No codeword is a prefix of another",
+        definition: "รหัสที่ไม่มีรหัสคำใดเป็นส่วนหน้า (Prefix) ของรหัสคำอื่นในชุดรหัสเดียวกัน การเป็น Prefix-free เป็นเงื่อนไขที่เพียงพอที่ทำให้รหัสนั้นเป็น Uniquely Decodable ได้เสมอ",
+        hint: "ไม่มีคำใดเป็นส่วนหน้าของคำอื่น"
+      },
+      {
+        id: "instantaneous-code",
+        term: "Instantaneous Code",
+        fullName: "Instantaneous Code",
+        category: "ch1",
+        categoryName: "1. Information Theory & Coding",
+        priority: "past",
+        examStats: "2557, 2563",
+        formula: "Prefix-free code ทุกตัวเป็น Instantaneous",
+        definition: "รหัสที่สามารถถอดรหัสได้ทันทีเมื่ออ่านบิตของรหัสคำนั้นจบ โดยไม่ต้องรออ่านบิตถัดไปที่ตามมา รหัสที่เป็น Prefix-free code ทั้งหมดจะเป็น Instantaneous code",
+        hint: "ถอดรหัสได้ทันทีเมื่อจบคำ ไม่ต้องรอบิตถัดไป"
+      },
+      {
+        id: "fixed-length",
+        term: "Fixed-Length Code",
+        fullName: "Fixed-Length Code",
+        category: "ch1",
+        categoryName: "1. Information Theory & Coding",
+        priority: "key",
+        examStats: "คีย์เวิร์ดสำคัญ",
+        formula: "ความยาวบิตคงที่เท่ากันทุกตัว",
+        definition: "ชุดรหัสที่รหัสคำของทุกๆ สัญลักษณ์มีความยาวบิตเท่ากันทั้งหมด เช่น รหัสขนาด 2 บิตคงที่ ถอดรหัสง่ายแต่ไม่ช่วยบีบอัดข้อมูลตามความน่าจะเป็น",
+        hint: "ทุกสัญลักษณ์มีความยาวบิตเท่ากันทั้งหมด"
+      },
+      {
+        id: "variable-length",
+        term: "Variable-Length Code",
+        fullName: "Variable-Length Code",
+        category: "ch1",
+        categoryName: "1. Information Theory & Coding",
+        priority: "key",
+        examStats: "คีย์เวิร์ดสำคัญ",
+        formula: "ความยาวไม่เท่ากันตามความถี่",
+        definition: "ชุดรหัสที่รหัสคำของแต่ละสัญลักษณ์ยาวไม่เท่ากัน โดยให้สัญลักษณ์ที่พบบ่อยมีความยาวสั้น และที่พบน้อยมีความยาวมาก เพื่อลดความยาวเฉลี่ยของข้อความ",
+        hint: "พบบ่อยให้บิตสั้น พบน้อยให้บิตยาว เพื่อลดความยาวเฉลี่ย"
+      },
+      {
+        id: "huffman-code",
+        term: "Huffman Code",
+        fullName: "Huffman Code",
+        category: "ch1",
+        categoryName: "1. Information Theory & Coding",
+        priority: "past",
+        examStats: "2557, 2563",
+        formula: "รวมความน่าจะเป็นต่ำสุด 2 ตัว",
+        definition: "วิธีการสร้างรหัสต้นทางแบบ Variable-length และ Prefix-free โดยรวมสัญลักษณ์ที่มีความน่าจะเป็นต่ำสุดเข้าด้วยกัน ได้รหัสที่เป็น Optimal code ให้ประสิทธิภาพบีบอัดสูงสุด",
+        hint: "สร้าง Prefix-free code จากความน่าจะเป็น ให้ความยาวเฉลี่ยต่ำสุด"
+      },
+      {
+        id: "kraft-inequality",
+        term: "Kraft Inequality",
+        fullName: "Kraft Inequality",
+        category: "ch1",
+        categoryName: "1. Information Theory & Coding",
+        priority: "top",
+        examStats: "2560, 2564, ข้อสอบจริง",
+        formula: "Σ r^(-l_i) <= 1",
+        definition: "อสมการทางคณิตศาสตร์ที่ใช้ตรวจสอบความยาวรหัสคำว่าเป็นไปได้หรือไม่ที่จะนำไปสร้างเป็นรหัสแบบ Instantaneous หรือ Prefix-free code (r คือฐานเลข, l_i คือความยาวรหัสคำ)",
+        hint: "อสมการรับรองการมีอยู่จริงของ Prefix-free code"
+      },
+
+      // --- หมวดที่ 2: Signal Conversion & Physical Transmission ---
+      {
+        id: "pcm",
+        term: "PCM",
+        fullName: "Pulse Code Modulation",
+        category: "ch2",
+        categoryName: "2. Signal Conversion & Transmission",
+        priority: "top",
+        examStats: "2557, 2560, 2563, 2564",
+        formula: "Sampling -> Quantization -> Encoding",
+        definition: "กระบวนการแปลงสัญญาณแอนะล็อกให้เป็นดิจิทัล ประกอบด้วย 3 ขั้นตอนหลัก: 1. Sampling (สุ่มตัวอย่าง) 2. Quantization (แบ่งระดับขั้น) และ 3. Encoding (แปลงเป็นรหัสเลขฐานสอง)",
+        hint: "แปลงแอนะล็อกเป็นดิจิทัลด้วย 3 ขั้นตอน"
+      },
+      {
+        id: "nyquist-sampling",
+        term: "Nyquist Sampling Theorem",
+        fullName: "Nyquist Sampling Theorem",
+        category: "ch2",
+        categoryName: "2. Signal Conversion & Transmission",
+        priority: "key",
+        examStats: "คีย์เวิร์ดสำคัญ",
+        formula: "f_s >= 2 * f_max",
+        definition: "ทฤษฎีการสุ่มตัวอย่างที่ระบุว่า อัตราสุ่มตัวอย่างต่ำสุดต้องไม่น้อยกว่า 2 เท่าของความถี่สูงสุดของสัญญาณ เพื่อให้สามารถกู้คืนสัญญาณแอนะล็อกเดิมได้สมบูรณ์โดยไม่เพี้ยน",
+        hint: "อัตราสุ่มตัวอย่างต่ำสุดต้องอย่างน้อย 2 เท่าของความถี่สูงสุด"
+      },
+      {
+        id: "aliasing",
+        term: "Aliasing",
+        fullName: "Aliasing Effect",
+        category: "ch2",
+        categoryName: "2. Signal Conversion & Transmission",
+        priority: "key",
+        examStats: "คีย์เวิร์ดสำคัญ",
+        formula: "เกิดขึ้นเมื่อ f_s < 2 * f_max",
+        definition: "ปรากฏการณ์ความเพี้ยนของสัญญาณที่เกิดขึ้นเมื่ออัตราการสุ่มตัวอย่างต่ำกว่าเกณฑ์ Nyquist ทำให้สเปกตรัมความถี่เกิดการทับซ้อนกันและไม่สามารถกู้คืนสัญญาณเดิมได้",
+        hint: "ความเพี้ยนจากการสุ่มตัวอย่างช้าเกินเกณฑ์ Nyquist"
+      },
+      {
+        id: "non-linear-quantization",
+        term: "Non-linear Quantization",
+        fullName: "Non-linear Quantization",
+        category: "ch2",
+        categoryName: "2. Signal Conversion & Transmission",
+        priority: "past",
+        examStats: "ข้อสอบจริงล่าสุด",
+        formula: "ขั้นไม่เท่ากัน (Step size ต่างกัน)",
+        definition: "การควอนไทซ์ที่กำหนดขนาดขั้นไม่เท่ากัน โดยช่วงแอมพลิจูดต่ำมีขั้นแคบและถี่ ส่วนแอมพลิจูดสูงมีขั้นกว้าง เพื่อลดความผิดพลาดเฉลี่ยของสัญญาณขนาดเล็ก เช่น เสียงพูด",
+        hint: "สัญญาณต่ำขั้นแคบ สัญญาณสูงขั้นกว้าง ลด error เฉลี่ย"
+      },
+      {
+        id: "bit-rate",
+        term: "Bit Rate",
+        fullName: "Bit Rate (Data Rate)",
+        category: "ch2",
+        categoryName: "2. Signal Conversion & Transmission",
+        priority: "key",
+        examStats: "คีย์เวิร์ดสำคัญ",
+        formula: "R_b = f_s * n (bps)",
+        definition: "ปริมาณบิตข้อมูลที่ถูกส่งผ่านหรือประมวลผลได้ในหนึ่งหน่วยเวลา มีหน่วยเป็น บิตต่อวินาที (bps) คำนวณจากอัตราสุ่มตัวอย่างคูณด้วยจำนวนบิตต่อ sample",
+        hint: "จำนวนบิตที่ส่งใน 1 วินาที (bps)"
+      },
+      {
+        id: "baud-rate",
+        term: "Baud Rate",
+        fullName: "Baud Rate (Symbol Rate)",
+        category: "ch2",
+        categoryName: "2. Signal Conversion & Transmission",
+        priority: "key",
+        examStats: "คีย์เวิร์ดสำคัญ",
+        formula: "จำนวนสัญญาณสัญลักษณ์ต่อวินาที",
+        definition: "จำนวนครั้งที่มีการเปลี่ยนแปลงสถานะของสัญญาณ (Signal elements หรือ Baud) ในหนึ่งหน่วยเวลา มีหน่วยเป็น Baud/sec โดย 1 Baud สามารถบรรจุได้ตั้งแต่ 1 บิตขึ้นไป",
+        hint: "จำนวนครั้งที่สัญญาณเปลี่ยนสถานะใน 1 วินาที"
+      },
+      {
+        id: "line-coding",
+        term: "Line Coding",
+        fullName: "Line Coding",
+        category: "ch2",
+        categoryName: "2. Signal Conversion & Transmission",
+        priority: "past",
+        examStats: "2563",
+        formula: "Digital bits -> Digital electrical pulses",
+        definition: "กระบวนการแปลงข้อมูลบิตดิจิทัล (0 และ 1) ให้อยู่ในรูปของสัญญาณพัลส์ไฟฟ้าดิจิทัลที่เหมาะสมสำหรับการส่งผ่านตัวกลางสายส่งทางกายภาพ",
+        hint: "แปลงบิตดิจิทัลให้เป็นพัลส์ไฟฟ้าบนสายส่ง"
+      },
+      {
+        id: "nrz-l",
+        term: "NRZ-L",
+        fullName: "Non-Return-to-Zero-Level",
+        category: "ch2",
+        categoryName: "2. Signal Conversion & Transmission",
+        priority: "key",
+        examStats: "คีย์เวิร์ดสำคัญ",
+        formula: "ระดับแรงดันคงที่ตลอดคาบบิต",
+        definition: "การเข้ารหัสสัญญาณขั้วคู่ (Polar) โดยระดับแรงดันไฟฟ้าจะคงที่ตลอดทั้งคาบบิต เช่น ให้แรงดันบวกแทนบิต 0 และแรงดันลบแทนบิต 1",
+        hint: "แรงดันคงที่ตลอดทั้งคาบบิต ไม่มีการกลับศูนย์"
+      },
+      {
+        id: "nrz-i",
+        term: "NRZ-I",
+        fullName: "Non-Return-to-Zero-Invert",
+        category: "ch2",
+        categoryName: "2. Signal Conversion & Transmission",
+        priority: "key",
+        examStats: "คีย์เวิร์ดสำคัญ",
+        formula: "สลับขั้วเมื่อเจอบิต 1 / คงเดิมเมื่อเจอบิต 0",
+        definition: "การเข้ารหัสแบบเปลี่ยนสถานะเมื่อเจอบิต 1 โดยหากพบข้อมูลเป็นบิต 1 สัญญาณจะสลับขั้วแรงดัน (Invert) แต่หากพบเป็นบิต 0 ระดับแรงดันจะไม่เปลี่ยนแปลง",
+        hint: "สลับขั้วเมื่อเจอบิต 1 คงเดิมเมื่อเป็นบิต 0"
+      },
+      {
+        id: "manchester",
+        term: "Manchester Encoding",
+        fullName: "Manchester Encoding",
+        category: "ch2",
+        categoryName: "2. Signal Conversion & Transmission",
+        priority: "top",
+        examStats: "2560, 2563, 2564, ข้อสอบจริง",
+        formula: "Transition at middle / Self-synchronizing",
+        definition: "การเข้ารหัสที่มีการสลับระดับแรงดัน (Transition) ที่กึ่งกลางของทุกคาบบิต ทำให้ทำหน้าที่เป็นสัญญาณนาฬิกาในตัว (Self-synchronizing) นิยมใช้ใน Ethernet LAN",
+        hint: "สลับแรงดันกึ่งกลางบิต เป็นสัญญาณนาฬิกาในตัว"
+      },
+      {
+        id: "diff-manchester",
+        term: "Differential Manchester",
+        fullName: "Differential Manchester Encoding",
+        category: "ch2",
+        categoryName: "2. Signal Conversion & Transmission",
+        priority: "key",
+        examStats: "คีย์เวิร์ดสำคัญ",
+        formula: "สลับกลางบิตเสมอ + สลับขอบบิตเมื่อเจอบิต 0",
+        definition: "การเข้ารหัสที่มีการสลับแรงดันกึ่งกลางบิตเสมอเพื่อการซิงโครไนซ์ แต่ใช้การสลับที่ขอบเริ่มต้นบิตในการบอกค่าข้อมูล (บิต 0 สลับที่ขอบ, บิต 1 ไม่สลับ)",
+        hint: "สลับกลางบิตซิงค์ สลับขอบบิตแทนข้อมูล"
+      },
+
+      // --- หมวดที่ 3: Modulation & Multiplexing ---
+      {
+        id: "am",
+        term: "AM",
+        fullName: "Amplitude Modulation",
+        category: "ch3",
+        categoryName: "3. Modulation & Multiplexing",
+        priority: "past",
+        examStats: "2563",
+        formula: "แอมพลิจูดเปลี่ยน ความถี่และเฟสคงที่",
+        definition: "การมอดูเลตสัญญาณแอนะล็อกโดยปรับเปลี่ยนขนาดความสูง (แอมพลิจูด) ของคลื่นพาห์ตามขนาดของข้อมูล โดยที่ความถี่และมุมเฟสคงที่ มีจุดอ่อนคือไวต่อคลื่นรบกวน",
+        hint: "แอมพลิจูดเปลี่ยน ความถี่และเฟสคงที่ ไวต่อสัญญาณรบกวน"
+      },
+      {
+        id: "fm",
+        term: "FM",
+        fullName: "Frequency Modulation",
+        category: "ch3",
+        categoryName: "3. Modulation & Multiplexing",
+        priority: "past",
+        examStats: "2560, 2563, 2564",
+        formula: "ความถี่เปลี่ยน แอมพลิจูดคงที่",
+        definition: "การมอดูเลตสัญญาณแอนะล็อกโดยปรับเปลี่ยนความถี่ของคลื่นพาห์ตามขนาดของข้อมูล โดยที่ขนาดแอมพลิจูดคงที่ ให้คุณภาพเสียงดีและทนทานต่อสัญญาณรบกวนได้ดีกว่า AM",
+        hint: "ความถี่เปลี่ยน แอมพลิจูดคงที่ ทน noise ได้ดีกว่า AM"
+      },
+      {
+        id: "ask",
+        term: "ASK",
+        fullName: "Amplitude Shift Keying",
+        category: "ch3",
+        categoryName: "3. Modulation & Multiplexing",
+        priority: "past",
+        examStats: "2563",
+        formula: "ดิจิทัลเปลี่ยนความสูงคลื่นพาห์",
+        definition: "การมอดูเลตสัญญาณดิจิทัลโดยกำหนดให้คลื่นพาห์มีแอมพลิจูดต่างกันตามค่าบิตข้อมูล (เช่น บิต 1 คลื่นสูง, บิต 0 ไม่มีคลื่น) สัญญาณรบกวนแทรกแซงได้ง่าย",
+        hint: "มอดูเลตดิจิทัล เปลี่ยนระดับแอมพลิจูดตามบิต"
+      },
+      {
+        id: "fsk",
+        term: "FSK",
+        fullName: "Frequency Shift Keying",
+        category: "ch3",
+        categoryName: "3. Modulation & Multiplexing",
+        priority: "past",
+        examStats: "2563",
+        formula: "บิต 1 ความถี่สูง / บิต 0 ความถี่ต่ำ",
+        definition: "การมอดูเลตสัญญาณดิจิทัลโดยปรับเปลี่ยนความถี่ของคลื่นพาห์ตามค่าบิตข้อมูล โดยแอมพลิจูดของคลื่นคงที่ เช่น บิต 1 ใช้ f1 และบิต 0 ใช้ f2",
+        hint: "มอดูเลตดิจิทัล เปลี่ยนความถี่ตามบิตข้อมูล"
+      },
+      {
+        id: "psk",
+        term: "PSK",
+        fullName: "Phase Shift Keying",
+        category: "ch3",
+        categoryName: "3. Modulation & Multiplexing",
+        priority: "top",
+        examStats: "2557 (8-PSK), 2560, 2563, 2564",
+        formula: "เปลี่ยนมุมเฟส (เช่น 180°) แอมพลิจูดและความถี่คงที่",
+        definition: "การมอดูเลตสัญญาณดิจิทัลโดยปรับเปลี่ยนมุมเฟสของคลื่นพาห์ตามค่าบิตข้อมูล โดยขนาดแอมพลิจูดและความถี่คงที่ ทนต่อสัญญาณรบกวนได้ดี",
+        hint: "มอดูเลตดิจิทัล เปลี่ยนแค่มุมเฟส ความถี่และขนาดคงที่"
+      },
+      {
+        id: "qam",
+        term: "QAM",
+        fullName: "Quadrature Amplitude Modulation",
+        category: "ch3",
+        categoryName: "3. Modulation & Multiplexing",
+        priority: "top",
+        examStats: "2557, 2560, 2563, 2564",
+        formula: "ผสมระหว่าง ASK + PSK (เปลี่ยนทั้ง Amp & Phase)",
+        definition: "การมอดูเลตสัญญาณดิจิทัลที่ผสมผสานระหว่าง ASK และ PSK ทำให้คลื่นพาห์เปลี่ยนทั้งแอมพลิจูดและมุมเฟส สามารถบรรจุข้อมูลได้หลายบิตต่อหนึ่งสัญลักษณ์ ประหยัดแบนด์วิดท์",
+        hint: "ผสม ASK + PSK เปลี่ยนทั้งแอมพลิจูดและเฟส"
+      },
+      {
+        id: "tdm",
+        term: "TDM",
+        fullName: "Time Division Multiplexing",
+        category: "ch3",
+        categoryName: "3. Modulation & Multiplexing",
+        priority: "top",
+        examStats: "2560, 2563, 2564, ข้อสอบจริง",
+        formula: "แบ่งช่วงเวลา (Time slots) บนสายส่งเส้นเดียว",
+        definition: "การมัลติเพล็กซ์สำหรับสัญญาณดิจิทัล โดยจัดสรรช่วงเวลา (Time slots) สลับกันส่งข้อมูลของแต่ละช่องทางบนสายส่งเส้นเดียวกันตามสัญญาณนาฬิกา",
+        hint: "มัลติเพล็กซ์ดิจิทัล แบ่งช่วงเวลาสลับกันส่งบนสายเดียว"
+      },
+      {
+        id: "fdm",
+        term: "FDM",
+        fullName: "Frequency Division Multiplexing",
+        category: "ch3",
+        categoryName: "3. Modulation & Multiplexing",
+        priority: "past",
+        examStats: "2563",
+        formula: "แบ่งย่านความถี่ (Frequency Bands)",
+        definition: "การมัลติเพล็กซ์สำหรับสัญญาณแอนะล็อก โดยแบ่งแบนด์วิดท์ของช่องสัญญาณออกเป็นย่านความถี่ย่อยที่ไม่ทับซ้อนกัน แล้วส่งไปบนคลื่นพาห์ต่างกันพร้อมๆ กัน",
+        hint: "มัลติเพล็กซ์แอนะล็อก แบ่งย่านความถี่ย่อยส่งพร้อมกัน"
+      },
+      {
+        id: "wdm",
+        term: "WDM",
+        fullName: "Wavelength Division Multiplexing",
+        category: "ch3",
+        categoryName: "3. Modulation & Multiplexing",
+        priority: "past",
+        examStats: "2563",
+        formula: "แบ่งความยาวคลื่นแสงในสายใยแก้ว",
+        definition: "การมัลติเพล็กซ์สัญญาณแสงในสายใยแก้วนำแสง (Fiber Optic) โดยรวมลำแสงที่มีความยาวคลื่น (แลมบ์ดา) หรือสีต่างกันเข้าสู่สายเส้นเดียวกันโดยใช้ปริซึม",
+        hint: "มัลติเพล็กซ์สัญญาณแสงด้วยความยาวคลื่นต่างกันในไฟเบอร์"
+      },
+
+      // --- หมวดที่ 4: Switching & Transmission Delays ---
+      {
+        id: "circuit-switching",
+        term: "Circuit Switching",
+        fullName: "Circuit Switching",
+        category: "ch4",
+        categoryName: "4. Switching & Delays",
+        priority: "key",
+        examStats: "ออกคำนวณใหญ่ 2557, 2560, 2563, 2564",
+        formula: "Connect -> Transfer -> Disconnect",
+        definition: "การสื่อสารที่ต้องสร้างวงจรเฉพาะ (Dedicated circuit) ล่วงหน้า มี 3 ขั้นตอน: Connect, Transfer, Disconnect ข้อมูลไหลตรงแบบ Cut-through แต่สิ้นเปลืองช่องสัญญาณช่วงที่ไม่มีการส่ง",
+        hint: "สร้างวงจรเฉพาะก่อนส่ง ข้อมูลไหลตรง สิ้นเปลืองช่วงเงียบ"
+      },
+      {
+        id: "packet-switching",
+        term: "Packet Switching",
+        fullName: "Packet Switching",
+        category: "ch4",
+        categoryName: "4. Switching & Delays",
+        priority: "key",
+        examStats: "ออกคำนวณใหญ่ 2557, 2560, 2563, 2564",
+        formula: "ซอยย่อยเป็น Packets + Store-and-Forward ขนาน",
+        definition: "การซอยข้อความออกเป็นชิ้นย่อยๆ เรียกว่า Packet แต่ละโหนดทำหน้าที่ Store-and-Forward ทีละแพ็กเก็ต ทำให้ส่งต่อแบบขนาน (Pipelining) ได้ ลดเวลารวมและใช้แบนด์วิดท์คุ้มค่า",
+        hint: "ซอยข้อมูลเป็นชิ้นย่อย ส่งต่อแบบ Pipelining ลดเวลารวม"
+      },
+      {
+        id: "store-and-forward",
+        term: "Store-and-Forward",
+        fullName: "Store-and-Forward Switching",
+        category: "ch4",
+        categoryName: "4. Switching & Delays",
+        priority: "past",
+        examStats: "2563",
+        formula: "รับจนครบทั้งก้อน -> ตรวจสอบ -> ส่งต่อ",
+        definition: "กลไกของโหนดสลับสายที่ต้องรับข้อมูลเข้ามาจนครบทั้งหน่วย (ครบก้อนข้อความหรือครบแพ็กเก็ต) และตรวจสอบความถูกต้องในบัฟเฟอร์ให้เสร็จสิ้นก่อน จึงจะเริ่มส่งต่อไปยังโหนดถัดไป",
+        hint: "รับข้อมูลครบทั้งก้อนในบัฟเฟอร์ ตรวจสอบก่อนส่งต่อ"
+      },
+      {
+        id: "cut-through",
+        term: "Cut-Through Switching",
+        fullName: "Cut-Through Switching",
+        category: "ch4",
+        categoryName: "4. Switching & Delays",
+        priority: "key",
+        examStats: "คีย์เวิร์ดสำคัญ",
+        formula: "ส่งต่อทันทีที่อ่าน Header จบ",
+        definition: "กลไกการส่งต่อข้อมูลของสวิตช์ที่เริ่มส่งเฟรมออกสู่พอร์ตปลายทางทันทีที่อ่านส่วนหัว (Address Header) ครบ โดยไม่ต้องรอรับข้อมูลส่วนที่เหลือให้ครบทั้งก้อน ช่วยลดดีเลย์ได้มากที่สุด",
+        hint: "ส่งต่อทันทีที่อ่าน Header ครบ ไม่ต้องรอทั้งก้อน"
+      },
+      {
+        id: "transmission-delay",
+        term: "Transmission Delay",
+        fullName: "Transmission Time / Delay",
+        category: "ch4",
+        categoryName: "4. Switching & Delays",
+        priority: "key",
+        examStats: "สูตรคำนวณข้อสอบ",
+        formula: "T_tx = L / R (Packet length / Data rate)",
+        definition: "เวลาที่อุปกรณ์ใช้ในการผลักหรือป้อนบิตข้อมูลทั้งหมดลงสู่สายส่งสัญญาณ คำนวณจากขนาดข้อมูลหารด้วยความเร็วลิงก์ ขึ้นอยู่กับขนาดข้อมูลและความเร็วช่องสัญญาณเท่านั้น",
+        hint: "เวลาป้อนบิตลงสายส่ง = ขนาดข้อมูล / อัตราส่ง"
+      },
+      {
+        id: "propagation-delay",
+        term: "Propagation Delay",
+        fullName: "Propagation Time / Delay",
+        category: "ch4",
+        categoryName: "4. Switching & Delays",
+        priority: "key",
+        examStats: "สูตรคำนวณข้อสอบ",
+        formula: "T_prop = d / v (Distance / Propagation speed)",
+        definition: "เวลาที่สัญญาณไฟฟ้าหรือแสงใช้เดินทางข้ามตัวกลางจากต้นทางไปยังปลายทาง คำนวณจากระยะทางสายส่งหารด้วยความเร็วคลื่นในตัวกลาง ขึ้นอยู่กับระยะทางและชนิดสายส่ง",
+        hint: "เวลาสัญญาณเดินทางบนตัวกลาง = ระยะทาง / ความเร็วคลื่น"
+      },
+
+      // --- หมวดที่ 5: Transmission Modes, Media & Topologies ---
+      {
+        id: "simplex",
+        term: "Simplex",
+        fullName: "Simplex Transmission",
+        category: "ch5",
+        categoryName: "5. Modes, Media & Topologies",
+        priority: "past",
+        examStats: "2563",
+        formula: "ทิศทางเดียว (One-way only)",
+        definition: "การสื่อสารข้อมูลแบบทิศทางเดียว ผู้ส่งส่งได้อย่างเดียว ผู้รับรับได้อย่างเดียว ไม่สามารถส่งย้อนกลับได้ เช่น การกระจายเสียงวิทยุและโทรทัศน์",
+        hint: "สื่อสารทางเดียว ผู้ส่งส่งได้อย่างเดียว ไม่ย้อนกลับ"
+      },
+      {
+        id: "half-duplex",
+        term: "Half-Duplex",
+        fullName: "Half-Duplex Transmission",
+        category: "ch5",
+        categoryName: "5. Modes, Media & Topologies",
+        priority: "past",
+        examStats: "2563",
+        formula: "สองทิศทางแต่สลับกันส่ง",
+        definition: "การสื่อสารข้อมูลแบบสองทิศทาง แต่สามารถส่งได้ทีละทิศทางในช่วงเวลาหนึ่ง ต้องสลับกันส่งและรับ ไม่สามารถส่งพร้อมกันได้ เช่น วิทยุสื่อสาร Walkie-Talkie",
+        hint: "สองทิศทางแต่ผลัดกันส่ง ไม่พร้อมกัน เช่น วอล์กเกอร์ทอล์กเกอร์"
+      },
+      {
+        id: "full-duplex",
+        term: "Full-Duplex",
+        fullName: "Full-Duplex Transmission",
+        category: "ch5",
+        categoryName: "5. Modes, Media & Topologies",
+        priority: "past",
+        examStats: "2563",
+        formula: "สองทิศทางพร้อมกันได้ตลอดเวลา",
+        definition: "การสื่อสารข้อมูลแบบสองทิศทางพร้อมกันได้ตลอดเวลา ทั้งผู้ส่งและผู้รับสามารถรับส่งข้อมูลได้ในเวลาเดียวกันบนตัวกลางเดียวกัน เช่น ระบบโทรศัพท์",
+        hint: "ส่งและรับได้พร้อมกันในเวลาเดียวกัน เช่น โทรศัพท์"
+      },
+      {
+        id: "utp",
+        term: "UTP",
+        fullName: "Unshielded Twisted Pair",
+        category: "ch5",
+        categoryName: "5. Modes, Media & Topologies",
+        priority: "past",
+        examStats: "2557, 2563",
+        formula: "ทองแดงบิดเกลียวคู่ ไม่มีชีลด์ ใช้ RJ-45",
+        definition: "สายสัญญาณทองแดงแบบไม่มีแผ่นชีลด์หุ้ม โดยนำสายทองแดงฉนวนมาบิดตีเกลียวเป็นคู่ๆ เพื่อลดและหักล้างสัญญาณรบกวนแม่เหล็กไฟฟ้า (Crosstalk) ใช้ร่วมกับหัวต่อ RJ-45",
+        hint: "สายทองแดงตีเกลียวคู่ไร้ชีลด์ ลด crosstalk ใช้กับ RJ-45"
+      },
+      {
+        id: "star-topology",
+        term: "Star Topology",
+        fullName: "Star Topology",
+        category: "ch5",
+        categoryName: "5. Modes, Media & Topologies",
+        priority: "past",
+        examStats: "2563",
+        formula: "ต่อสายแยกเข้าสู่ Hub / Switch กลาง",
+        definition: "โครงสร้างเครือข่ายที่ทุกอุปกรณ์ต่อสายแยกอิสระเข้าสู่อุปกรณ์ศูนย์กลาง (Hub หรือ Switch) หากสายของโฮสต์ใดขาดจะไม่กระทบโฮสต์อื่น นิยมใช้งานมากที่สุดใน LAN ปัจจุบัน",
+        hint: "อุปกรณ์ทุกตัวต่อเข้าศูนย์กลาง สายโหนดใดขาดไม่กระทบคนอื่น"
+      },
+      {
+        id: "mesh-topology",
+        term: "Mesh Topology",
+        fullName: "Mesh Topology",
+        category: "ch5",
+        categoryName: "5. Modes, Media & Topologies",
+        priority: "past",
+        examStats: "2563",
+        formula: "Full Mesh ใช้สาย n*(n-1)/2 เส้น",
+        definition: "โครงสร้างเครือข่ายที่ทุกอุปกรณ์มีสายเชื่อมต่อถึงกันโดยตรงแบบจุดต่อจุด ให้ความน่าเชื่อถือและทนทานต่อความเสียหายสูงสุด แต่สิ้นเปลืองสายสัญญาณและค่าใช้จ่ายมาก",
+        hint: "เชื่อมต่อถึงกันทุกคู่โดยตรง มีความเสถียรสูงสุด แต่เปลืองงบ"
+      },
+
+      // --- หมวดที่ 6: Error Control & Data Link Protocols ---
+      {
+        id: "hamming-distance",
+        term: "Hamming Distance",
+        fullName: "Hamming Distance",
+        category: "ch6",
+        categoryName: "6. Error Control & Protocols",
+        priority: "past",
+        examStats: "2563",
+        formula: "นับจำนวนบิต 1 ของผลลัพธ์ XOR",
+        definition: "จำนวนตำแหน่งบิตที่แตกต่างกันระหว่างสองรหัสคำที่มีความยาวเท่ากัน คำนวณได้จากการนำรหัสคำทั้งสองมา XOR กันแล้วนับจำนวนบิตที่เป็น 1",
+        hint: "จำนวนตำแหน่งบิตที่ต่างกัน หาได้จากผลบิต 1 ของ XOR"
+      },
+      {
+        id: "min-hamming-dist",
+        term: "Minimum Hamming Distance",
+        fullName: "Minimum Hamming Distance",
+        category: "ch6",
+        categoryName: "6. Error Control & Protocols",
+        priority: "top",
+        examStats: "2560, 2564, ข้อสอบจริง",
+        formula: "Detect s errors: d_min >= s + 1 | Correct t errors: d_min >= 2t + 1",
+        definition: "ค่าระยะห่างแฮมมิงที่น้อยที่สุดเมื่อเปรียบเทียบระหว่างคู่รหัสคำทุกคู่ในชุดรหัส ใช้กำหนดขีดความสามารถในการตรวจจับ error (d_min >= s + 1) และแก้ไข error (d_min >= 2t + 1)",
+        hint: "ระยะห่างต่ำสุดของรหัสคำ กำหนดขีดตรวจจับและแก้ error"
+      },
+      {
+        id: "error-control-coding",
+        term: "Error Control Coding",
+        fullName: "Channel Coding / Error Control Coding",
+        category: "ch6",
+        categoryName: "6. Error Control & Protocols",
+        priority: "top",
+        examStats: "2557, 2563, ข้อสอบจริง",
+        formula: "ใส่ Redundancy bits เพื่อ Detect & Correct error",
+        definition: "เทคนิคการเพิ่มบิตส่วนเกินหรือพาริตี (Redundancy bits) เข้าไปในข้อมูล เพื่อให้ปลายทางสามารถตรวจสอบและแก้ไขข้อผิดพลาดที่เกิดจากสัญญาณรบกวนในช่องสัญญาณได้",
+        hint: "ใส่บิตส่วนเกินเพื่อให้ตรวจจับและแก้ไข error ได้"
+      },
+      {
+        id: "crc",
+        term: "CRC",
+        fullName: "Cyclic Redundancy Check",
+        category: "ch6",
+        categoryName: "6. Error Control & Protocols",
+        priority: "key",
+        examStats: "คีย์เวิร์ดสำคัญ",
+        formula: "หารพหุนาม Modulo-2 เอาเศษ (Remainder) แปะท้าย",
+        definition: "เทคนิคตรวจจับข้อผิดพลาดที่มีประสิทธิภาพสูง โดยใช้การหารข้อมูลด้วยพหุนามกำเนิด (Generator Polynomial) แบบ Modulo-2 แล้วนำเศษที่ได้ไปต่อท้ายข้อมูลเพื่อส่งออกไป",
+        hint: "ตรวจจับ error ด้วยการหารพหุนาม Modulo-2 เอาเศษแปะท้าย"
+      },
+      {
+        id: "csma-cd",
+        term: "CSMA/CD",
+        fullName: "Carrier Sense Multiple Access with Collision Detection",
+        category: "ch6",
+        categoryName: "6. Error Control & Protocols",
+        priority: "past",
+        examStats: "2563",
+        formula: "Listen before talk + Jam signal + Backoff",
+        definition: "โปรโตคอลควบคุมการเข้าใช้สื่อของ Ethernet: 'ฟังก่อนส่ง' (Carrier Sense) และ 'ตรวจจับการชนขณะส่ง' (Collision Detection) หากชนกันจะหยุดส่ง ปล่อย Jam Signal แล้วสุ่มรอใหม่",
+        hint: "ฟังก่อนส่ง ตรวจจับการชน หากชนปล่อย Jam signal แล้ว Backoff"
+      },
+      {
+        id: "jam-signal",
+        term: "Jam Signal",
+        fullName: "Jam Signal",
+        category: "ch6",
+        categoryName: "6. Error Control & Protocols",
+        priority: "key",
+        examStats: "คีย์เวิร์ดสำคัญ",
+        formula: "สัญญาณแจ้งเตือนการชนใน CSMA/CD",
+        definition: "สัญญาณพิเศษขนาดสั้นที่อุปกรณ์ส่งออกมาทันทีที่ตรวจพบการชนกันของข้อมูลบนสาย Ethernet เพื่อเตือนให้ทุกโหนดในเครือข่ายรับทราบและหยุดส่งข้อมูลทันที",
+        hint: "สัญญาณสั้นแจ้งเตือนทุกโหนดเมื่อเกิดการชนกันบนสาย Ethernet"
+      },
+
+      // --- หมวดที่ 7: OSI Reference Model & Network Devices ---
+      {
+        id: "osi-model",
+        term: "OSI Model",
+        fullName: "Open Systems Interconnection Model",
+        category: "ch7",
+        categoryName: "7. OSI Model & Devices",
+        priority: "top",
+        examStats: "2557, 2563, ข้อสอบจริง",
+        formula: "Physical > Data Link > Network > Transport > Session > Presentation > Application",
+        definition: "สถาปัตยกรรมอ้างอิงมาตรฐานสากล 7 เลเยอร์สำหรับการสื่อสารข้อมูล แบ่งหน้าที่ทำงานเป็นลำดับชั้น ช่วยให้อุปกรณ์ต่างค่ายสามารถสื่อสารกันได้ตามมาตรฐานสากล",
+        hint: "สถาปัตยกรรม 7 ชั้นมาตรฐานสากลสำหรับการสื่อสารเครือข่าย"
+      },
+      {
+        id: "mac-address",
+        term: "MAC Address",
+        fullName: "Media Access Control Address",
+        category: "ch7",
+        categoryName: "7. OSI Model & Devices",
+        priority: "key",
+        examStats: "คีย์เวิร์ดสำคัญ",
+        formula: "48-bit (12 Hex digits) ฝังใน NIC (Layer 2)",
+        definition: "หมายเลขประจำตัวทางกายภาพของการ์ดแลน (NIC) ประกอบด้วยเลขฐานสิบหกขนาด 48 บิต (12 หลัก) ถูกฝังมาจากโรงงาน ทำงานอยู่ในระดับ Data Link Layer (Layer 2)",
+        hint: "เลขประจำตัวการ์ดแลน 48 บิต ไม่เปลี่ยน ทำงานระดับ Layer 2"
+      },
+      {
+        id: "ip-address",
+        term: "IP Address",
+        fullName: "Internet Protocol Address",
+        category: "ch7",
+        categoryName: "7. OSI Model & Devices",
+        priority: "key",
+        examStats: "คีย์เวิร์ดสำคัญ",
+        formula: "IPv4 32-bit ตรรกะระบุตำแหน่ง (Layer 3)",
+        definition: "หมายเลขเชิงตรรกะที่กำหนดให้แก่โฮสต์บนเครือข่าย เพื่อใช้ระบุตำแหน่งและค้นหาเส้นทางส่งข้อมูลข้ามเครือข่าย ทำงานอยู่ในระดับ Network Layer (Layer 3)",
+        hint: "ที่อยู่เชิงตรรกะสำหรับหาเส้นทางข้ามเครือข่าย ทำงานระดับ Layer 3"
+      },
+      {
+        id: "switch-layer2",
+        term: "Switch (Layer 2)",
+        fullName: "Data Link Layer Switch",
+        category: "ch7",
+        categoryName: "7. OSI Model & Devices",
+        priority: "key",
+        examStats: "คีย์เวิร์ดสำคัญ",
+        formula: "ส่งต่อเฟรมตาม MAC Table / แยก Collision Domain",
+        definition: "อุปกรณ์ระดับ Layer 2 ที่ส่งต่อเฟรมข้อมูลตามตาราง MAC Address Table โดยกรองและส่งเฟรมเฉพาะพอร์ตปลายทาง ช่วยแยก Collision Domain ออกจากกันในทุกๆ พอร์ต",
+        hint: "ส่งต่อเฟรมตาม MAC Table แยก Collision Domain ทุกพอร์ต"
+      },
+      {
+        id: "router-layer3",
+        term: "Router (Layer 3)",
+        fullName: "Network Layer Router",
+        category: "ch7",
+        categoryName: "7. OSI Model & Devices",
+        priority: "key",
+        examStats: "คีย์เวิร์ดสำคัญ",
+        formula: "ส่งต่อแพ็กเก็ตตาม IP Table / แยก Broadcast Domain",
+        definition: "อุปกรณ์ระดับ Layer 3 ที่เชื่อมต่อเครือข่ายต่างชนิดกัน ทำหน้าที่ค้นหาเส้นทางที่ดีที่สุด (Routing) และส่งต่อข้อมูลตาม IP Address ช่วยแยกทั้ง Collision และ Broadcast Domain",
+        hint: "หาเส้นทางส่งต่อตาม IP Address ช่วยแยก Broadcast Domain"
+      }
+    ];
+
+    // Lightweight Web Audio synthesizer for tactile UI sound effects
+    class SoundFX {
+      constructor() {
+        this.ctx = null;
+        this.enabled = true;
+      }
+      init() {
+        if (!this.ctx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          if (AudioContext) {
+            this.ctx = new AudioContext();
+          }
+        }
+        if (this.ctx && this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
+      }
+      playFlip() {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(440, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(700, this.ctx.currentTime + 0.08);
+        gain.gain.setValueAtTime(0.12, this.ctx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.08);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.08);
+      }
+      playMatchSuccess() {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+        const now = this.ctx.currentTime;
+        const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+        notes.forEach((freq, idx) => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(freq, now + idx * 0.06);
+          gain.gain.setValueAtTime(0, now + idx * 0.06);
+          gain.gain.linearRampToValueAtTime(0.18, now + idx * 0.06 + 0.02);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.06 + 0.22);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(now + idx * 0.06);
+          osc.stop(now + idx * 0.06 + 0.25);
+        });
+      }
+      playError() {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(220, now);
+        osc.frequency.setValueAtTime(160, now + 0.09);
+        gain.gain.setValueAtTime(0.15, now);
+        gain.gain.linearRampToValueAtTime(0.01, now + 0.2);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.22);
+      }
+      playCheer() {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+        const now = this.ctx.currentTime;
+        const chord = [523.25, 659.25, 783.99, 1046.50];
+        chord.forEach(freq => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, now);
+          gain.gain.setValueAtTime(0.1, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.7);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(now);
+          osc.stop(now + 0.75);
+        });
+      }
+    }
+    const sound = new SoundFX();
+
+    function toggleAudio() {
+      sound.enabled = !sound.enabled;
+      document.getElementById('audio-icon').textContent = sound.enabled ? '🔊' : '🔇';
+      showToast(sound.enabled ? 'เปิดเสียงเอฟเฟกต์แล้ว' : 'ปิดเสียงเอฟเฟกต์แล้ว', 'info');
+    }
+
+    // Text to Speech for English pronunciations
+    function speakEnglish(text) {
+      if (!('speechSynthesis' in window)) return;
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'en-US';
+      utterance.rate = 0.95;
+      window.speechSynthesis.speak(utterance);
+    }
+
+    // Global App State
+    let currentCategory = 'all';
+    let currentPriority = 'all';
+    let searchQuery = '';
+    let filteredVocab = [...VOCAB_DATA];
+
+    // View Navigation
+    function switchView(viewName) {
+      sound.playFlip();
+      const views = ['flashcard', 'match-fullname', 'match-definition', 'speed-quiz', 'glossary'];
+      views.forEach(v => {
+        const sec = document.getElementById(`view-${v}`);
+        const nav = document.getElementById(`nav-${v}`);
+        if (v === viewName) {
+          sec.classList.remove('hidden');
+          nav.className = 'nav-btn px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all flex items-center space-x-1.5 bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow';
+        } else {
+          sec.classList.add('hidden');
+          nav.className = 'nav-btn px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all flex items-center space-x-1.5 text-slate-300 hover:text-white hover:bg-slate-800/80';
+        }
+      });
+
+      // Show/Hide top filter based on view context
+      const filterContainer = document.getElementById('filter-container');
+      if (viewName === 'speed-quiz') {
+        filterContainer.classList.add('hidden');
+        startSpeedQuiz();
+      } else if (viewName === 'match-fullname') {
+        filterContainer.classList.remove('hidden');
+        startMatchFullNameGame();
+      } else if (viewName === 'match-definition') {
+        filterContainer.classList.remove('hidden');
+        startMatchDefinitionGame();
+      } else {
+        filterContainer.classList.remove('hidden');
+        if (viewName === 'glossary') renderGlossary();
+      }
+    }
+
+    // Filtering Core
+    function applyGlobalFilters() {
+      filteredVocab = VOCAB_DATA.filter(item => {
+        // Category filter
+        let matchCat = true;
+        if (currentCategory === 'tophit') {
+          matchCat = (item.priority === 'top');
+        } else if (currentCategory !== 'all') {
+          matchCat = (item.category === currentCategory);
+        }
+
+        // Priority filter
+        let matchPrio = true;
+        if (currentPriority !== 'all') {
+          matchPrio = (item.priority === currentPriority);
+        }
+
+        // Search text
+        let matchSearch = true;
+        if (searchQuery.trim() !== '') {
+          const q = searchQuery.toLowerCase().trim();
+          matchSearch = item.term.toLowerCase().includes(q) ||
+                        item.fullName.toLowerCase().includes(q) ||
+                        item.definition.toLowerCase().includes(q) ||
+                        item.examStats.toLowerCase().includes(q);
+        }
+
+        return matchCat && matchPrio && matchSearch;
+      });
+
+      // Update counters
+      document.getElementById('count-all').textContent = VOCAB_DATA.length;
+      document.getElementById('fc-total-count').textContent = filteredVocab.length;
+
+      // Update active view
+      fcIndex = 0;
+      renderCurrentFlashcard();
+      renderGlossary();
+    }
+
+    function setFilterCategory(cat) {
+      sound.playFlip();
+      currentCategory = cat;
+      document.querySelectorAll('.cat-chip').forEach(btn => {
+        btn.classList.remove('bg-cyan-500', 'text-white');
+        btn.classList.add('bg-slate-800', 'text-slate-300');
+      });
+      const activeBtn = document.getElementById(`cat-btn-${cat}`);
+      if (activeBtn) {
+        activeBtn.classList.remove('bg-slate-800', 'text-slate-300');
+        activeBtn.classList.add('bg-cyan-500', 'text-white');
+      }
+      applyGlobalFilters();
+      // If currently in a match game, refresh the game deck with the chosen category
+      if (!document.getElementById('view-match-fullname').classList.contains('hidden')) {
+        startMatchFullNameGame();
+      } else if (!document.getElementById('view-match-definition').classList.contains('hidden')) {
+        startMatchDefinitionGame();
+      }
+    }
+
+    function setFilterPriority(prio) {
+      sound.playFlip();
+      currentPriority = prio;
+      document.querySelectorAll('.prio-btn').forEach(btn => {
+        btn.classList.remove('bg-slate-800', 'text-cyan-400', 'font-semibold');
+        btn.classList.add('text-slate-400');
+      });
+      const activeBtn = document.getElementById(`prio-${prio}`);
+      if (activeBtn) {
+        activeBtn.classList.add('bg-slate-800', 'text-cyan-400', 'font-semibold');
+        activeBtn.classList.remove('text-slate-400');
+      }
+      applyGlobalFilters();
+    }
+
+    function onSearchChange(val) {
+      searchQuery = val;
+      applyGlobalFilters();
+    }
+
+    // ================= FLASHCARD CONTROLLER =================
+    let fcIndex = 0;
+    let fcIsFlipped = false;
+    let masteredCards = new Set();
+    let reviewCards = new Set();
+
+    function renderCurrentFlashcard() {
+      if (filteredVocab.length === 0) {
+        document.getElementById('fc-front-term').textContent = "ไม่พบคำศัพท์";
+        document.getElementById('fc-front-hint').textContent = "ลองเปลี่ยนตัวกรองหรือคำค้นหา";
+        document.getElementById('fc-current-index').textContent = "0";
+        document.getElementById('fc-total-count').textContent = "0";
+        return;
+      }
+
+      if (fcIndex >= filteredVocab.length) fcIndex = 0;
+      if (fcIndex < 0) fcIndex = filteredVocab.length - 1;
+
+      const item = filteredVocab[fcIndex];
+      fcIsFlipped = false;
+      document.getElementById('flashcard-element').classList.remove('rotate-y-180');
+
+      // Update counters & progress
+      document.getElementById('fc-current-index').textContent = fcIndex + 1;
+      document.getElementById('fc-total-count').textContent = filteredVocab.length;
+      const progressPercent = ((fcIndex + 1) / filteredVocab.length) * 100;
+      document.getElementById('fc-progress-bar').style.width = `${progressPercent}%`;
+
+      // Badge Priority
+      const pBadge = document.getElementById('fc-priority-badge');
+      if (item.priority === 'top') {
+        pBadge.className = "px-2 py-0.5 rounded-md text-[11px] font-bold bg-rose-500/20 text-rose-400 border border-rose-500/40";
+        pBadge.textContent = "🔥 TOP HIT ออกสอบบ่อย";
+      } else if (item.priority === 'past') {
+        pBadge.className = "px-2 py-0.5 rounded-md text-[11px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40";
+        pBadge.textContent = "⭐ เคยออกสอบจริง";
+      } else {
+        pBadge.className = "px-2 py-0.5 rounded-md text-[11px] font-bold bg-sky-500/20 text-sky-300 border border-sky-500/40";
+        pBadge.textContent = "📌 คีย์เวิร์ดในสไลด์";
+      }
+
+      // Front Details
+      document.getElementById('fc-front-chapter').textContent = item.categoryName;
+      document.getElementById('fc-front-term').textContent = item.term;
+      document.getElementById('fc-front-hint').textContent = item.hint || `(${item.fullName})`;
+      document.getElementById('fc-front-stats').textContent = item.examStats;
+
+      // Back Details
+      document.getElementById('fc-back-chapter').textContent = item.categoryName;
+      document.getElementById('fc-back-fullname').textContent = item.fullName;
+      document.getElementById('fc-back-definition').textContent = item.definition;
+      document.getElementById('fc-back-formula').textContent = item.formula ? `สูตร/จุดสังเกต: ${item.formula}` : '';
+    }
+
+    function flipCurrentCard() {
+      sound.playFlip();
+      fcIsFlipped = !fcIsFlipped;
+      const cardEl = document.getElementById('flashcard-element');
+      if (fcIsFlipped) {
+        cardEl.classList.add('rotate-y-180');
+      } else {
+        cardEl.classList.remove('rotate-y-180');
+      }
+    }
+
+    function nextCard() {
+      sound.playFlip();
+      fcIndex = (fcIndex + 1) % filteredVocab.length;
+      renderCurrentFlashcard();
+    }
+
+    function prevCard() {
+      sound.playFlip();
+      fcIndex = (fcIndex - 1 + filteredVocab.length) % filteredVocab.length;
+      renderCurrentFlashcard();
+    }
+
+    function shuffleCards() {
+      sound.playFlip();
+      for (let i = filteredVocab.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [filteredVocab[i], filteredVocab[j]] = [filteredVocab[j], filteredVocab[i]];
+      }
+      fcIndex = 0;
+      renderCurrentFlashcard();
+      showToast('🔀 สลับลำดับการ์ดเรียบร้อยแล้ว', 'info');
+    }
+
+    function markCard(isMastered) {
+      if (filteredVocab.length === 0) return;
+      const currentItem = filteredVocab[fcIndex];
+      if (isMastered) {
+        masteredCards.add(currentItem.id);
+        reviewCards.delete(currentItem.id);
+        sound.playMatchSuccess();
+        showToast(`✓ บันทึกว่าจำ "${currentItem.term}" ได้แล้ว`, 'success');
+      } else {
+        reviewCards.add(currentItem.id);
+        masteredCards.delete(currentItem.id);
+        sound.playError();
+        showToast(`↻ เพิ่ม "${currentItem.term}" ไปยังรายการทบทวน`, 'warning');
+      }
+      document.getElementById('fc-mastered-count').textContent = masteredCards.size;
+      document.getElementById('fc-review-count').textContent = reviewCards.size;
+      nextCard();
+    }
+
+    function speakTerm(e) {
+      e.stopPropagation();
+      if (filteredVocab[fcIndex]) {
+        speakEnglish(filteredVocab[fcIndex].term);
+      }
+    }
+
+    function speakFullName(e) {
+      e.stopPropagation();
+      if (filteredVocab[fcIndex]) {
+        speakEnglish(filteredVocab[fcIndex].fullName);
+      }
+    }
+
+    // Keyboard navigation
+    window.addEventListener('keydown', (e) => {
+      // Don't trigger shortcuts if user is typing in search input
+      if (document.activeElement && document.activeElement.tagName === 'INPUT') return;
+      const isFlashcardVisible = !document.getElementById('view-flashcard').classList.contains('hidden');
+      if (!isFlashcardVisible) return;
+
+      if (e.code === 'Space') {
+        e.preventDefault();
+        flipCurrentCard();
+      } else if (e.code === 'ArrowRight') {
+        nextCard();
+      } else if (e.code === 'ArrowLeft') {
+        prevCard();
+      } else if (e.key === '1') {
+        markCard(false);
+      } else if (e.key === '2') {
+        markCard(true);
+      }
+    });
+
+    // ================= MATCH FULL NAME CONTROLLER =================
+    let mfnSelectedTile = null;
+    let mfnMatchedPairs = 0;
+    let mfnTotalPairs = 6;
+    let mfnCombo = 0;
+    let mfnTimerInterval = null;
+    let mfnSeconds = 0;
+
+    function startMatchFullNameGame() {
+      // Clear timers and UI
+      clearInterval(mfnTimerInterval);
+      mfnSeconds = 0;
+      mfnCombo = 0;
+      mfnMatchedPairs = 0;
+      mfnSelectedTile = null;
+      document.getElementById('mfn-timer').textContent = "00:00";
+      document.getElementById('mfn-combo').textContent = "0x 🔥";
+      document.getElementById('mfn-matches-count').textContent = `0 / ${mfnTotalPairs}`;
+      document.getElementById('mfn-victory-banner').classList.add('hidden');
+
+      // Start timer
+      mfnTimerInterval = setInterval(() => {
+        mfnSeconds++;
+        const mins = String(Math.floor(mfnSeconds / 60)).padStart(2, '0');
+        const secs = String(mfnSeconds % 60).padStart(2, '0');
+        document.getElementById('mfn-timer').textContent = `${mins}:${secs}`;
+      }, 1000);
+
+      // Choose terms pool (filter pool or all)
+      let pool = filteredVocab.length >= mfnTotalPairs ? [...filteredVocab] : [...VOCAB_DATA];
+      // Shuffle and pick 6 items
+      pool.sort(() => Math.random() - 0.5);
+      const chosenTerms = pool.slice(0, mfnTotalPairs);
+
+      // Create 12 cards (6 Short terms, 6 Full names)
+      const tiles = [];
+      chosenTerms.forEach(item => {
+        tiles.push({
+          id: item.id,
+          text: item.term,
+          sub: 'คำย่อ / ชื่อหลัก',
+          type: 'term'
+        });
+        tiles.push({
+          id: item.id,
+          text: item.fullName,
+          sub: 'ชื่อเต็มภาษาอังกฤษ',
+          type: 'fullname'
+        });
+      });
+
+      // Shuffle tiles for the grid
+      tiles.sort(() => Math.random() - 0.5);
+
+      // Render grid
+      const grid = document.getElementById('mfn-grid');
+      grid.innerHTML = '';
+
+      tiles.forEach((tile, index) => {
+        const card = document.createElement('button');
+        card.id = `mfn-tile-${index}`;
+        card.className = 'mfn-tile relative p-4 rounded-2xl bg-slate-900 border-2 border-slate-800 hover:border-indigo-500/70 text-left transition-all duration-200 flex flex-col justify-between h-28 sm:h-32 active:scale-95 shadow-sm group';
+        card.dataset.id = tile.id;
+        card.dataset.type = tile.type;
+        card.dataset.index = index;
+
+        card.innerHTML = `
+          <div class="flex items-center justify-between w-full">
+            <span class="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-md ${tile.type === 'term' ? 'bg-cyan-950 text-cyan-400 border border-cyan-800' : 'bg-indigo-950 text-indigo-300 border border-indigo-800'}">
+              ${tile.sub}
+            </span>
+            <span class="mfn-check hidden text-emerald-400 font-bold text-sm">✓</span>
+          </div>
+          <p class="font-display font-bold ${tile.type === 'term' ? 'text-lg sm:text-xl text-white' : 'text-xs sm:text-sm text-indigo-100'} line-clamp-2 mt-1">
+            ${tile.text}
+          </p>
+        `;
+
+        card.onclick = () => onMatchTileClicked(card, tile);
+        grid.appendChild(card);
+      });
+    }
+
+    function onMatchTileClicked(card, tile) {
+      if (card.classList.contains('matched') || card === mfnSelectedTile) return;
+
+      sound.playFlip();
+
+      // If no card currently selected
+      if (!mfnSelectedTile) {
+        mfnSelectedTile = card;
+        card.classList.add('border-cyan-400', 'bg-slate-850', 'ring-2', 'ring-cyan-400/50');
+        return;
+      }
+
+      // Second card tapped -> Compare
+      const firstCard = mfnSelectedTile;
+      const firstId = firstCard.dataset.id;
+      const firstType = firstCard.dataset.type;
+      const secondId = card.dataset.id;
+      const secondType = card.dataset.type;
+
+      // Check match: Same ID and different types (one is term, other is full name)
+      if (firstId === secondId && firstType !== secondType) {
+        // MATCH SUCCESS!
+        sound.playMatchSuccess();
+        mfnCombo++;
+        document.getElementById('mfn-combo').textContent = `${mfnCombo}x 🔥`;
+
+        [firstCard, card].forEach(c => {
+          c.classList.remove('border-cyan-400', 'ring-2', 'ring-cyan-400/50', 'hover:border-indigo-500/70');
+          c.classList.add('matched', 'bg-emerald-950/40', 'border-emerald-500/70', 'opacity-80');
+          c.querySelector('.mfn-check').classList.remove('hidden');
+        });
+
+        mfnMatchedPairs++;
+        document.getElementById('mfn-matches-count').textContent = `${mfnMatchedPairs} / ${mfnTotalPairs}`;
+        mfnSelectedTile = null;
+
+        if (mfnMatchedPairs >= mfnTotalPairs) {
+          // Complete round!
+          clearInterval(mfnTimerInterval);
+          sound.playCheer();
+          document.getElementById('mfn-final-time').textContent = document.getElementById('mfn-timer').textContent;
+          document.getElementById('mfn-victory-banner').classList.remove('hidden');
+        }
+      } else {
+        // WRONG MATCH
+        sound.playError();
+        mfnCombo = 0;
+        document.getElementById('mfn-combo').textContent = `0x 🔥`;
+
+        card.classList.add('border-rose-500', 'bg-rose-950/30', 'animate-shake');
+        firstCard.classList.add('border-rose-500', 'bg-rose-950/30', 'animate-shake');
+
+        setTimeout(() => {
+          card.classList.remove('border-rose-500', 'bg-rose-950/30', 'animate-shake', 'ring-2', 'ring-cyan-400/50');
+          firstCard.classList.remove('border-rose-500', 'bg-rose-950/30', 'animate-shake', 'border-cyan-400', 'ring-2', 'ring-cyan-400/50', 'bg-slate-850');
+          mfnSelectedTile = null;
+        }, 550);
+      }
+    }
+
+    // ================= MATCH DEFINITION CONTROLLER =================
+    let mdefSelectedTerm = null;
+    let mdefSelectedDef = null;
+    let mdefMatchedCount = 0;
+    const mdefTotalCount = 4;
+    let mdefCombo = 0;
+    let mdefTimerInterval = null;
+    let mdefSeconds = 0;
+
+    function startMatchDefinitionGame() {
+      clearInterval(mdefTimerInterval);
+      mdefSeconds = 0;
+      mdefCombo = 0;
+      mdefMatchedCount = 0;
+      mdefSelectedTerm = null;
+      mdefSelectedDef = null;
+      document.getElementById('mdef-timer').textContent = "00:00";
+      document.getElementById('mdef-combo').textContent = "0x 🔥";
+      document.getElementById('mdef-matches-count').textContent = `0 / ${mdefTotalCount}`;
+      document.getElementById('mdef-victory-banner').classList.add('hidden');
+
+      // Start timer
+      mdefTimerInterval = setInterval(() => {
+        mdefSeconds++;
+        const mins = String(Math.floor(mdefSeconds / 60)).padStart(2, '0');
+        const secs = String(mdefSeconds % 60).padStart(2, '0');
+        document.getElementById('mdef-timer').textContent = `${mins}:${secs}`;
+      }, 1000);
+
+      // Select 4 items from pool
+      let pool = filteredVocab.length >= mdefTotalCount ? [...filteredVocab] : [...VOCAB_DATA];
+      pool.sort(() => Math.random() - 0.5);
+      const chosen = pool.slice(0, mdefTotalCount);
+
+      // Build Left: Terms
+      const leftCol = document.getElementById('mdef-terms-col');
+      leftCol.innerHTML = '';
+      const shuffledTerms = [...chosen].sort(() => Math.random() - 0.5);
+
+      shuffledTerms.forEach(item => {
+        const btn = document.createElement('button');
+        btn.id = `mdef-term-${item.id}`;
+        btn.className = 'w-full p-4 rounded-2xl bg-slate-900 border-2 border-slate-800 hover:border-cyan-500 text-left transition-all flex items-center justify-between shadow-sm active:scale-98 group';
+        btn.dataset.id = item.id;
+        btn.innerHTML = `
+          <div>
+            <span class="text-xs text-cyan-400 font-mono block">${item.categoryName}</span>
+            <span class="font-display font-bold text-lg text-white block mt-0.5">${item.term}</span>
+            <span class="text-xs text-slate-400">${item.fullName}</span>
+          </div>
+          <span class="mdef-status text-xs font-semibold px-2 py-1 rounded bg-slate-800 text-slate-400 group-hover:text-cyan-300">เลือก</span>
+        `;
+        btn.onclick = () => selectDefinitionTerm(btn, item.id);
+        leftCol.appendChild(btn);
+      });
+
+      // Build Right: Definitions
+      const rightCol = document.getElementById('mdef-defs-col');
+      rightCol.innerHTML = '';
+      const shuffledDefs = [...chosen].sort(() => Math.random() - 0.5);
+
+      shuffledDefs.forEach(item => {
+        const btn = document.createElement('button');
+        btn.id = `mdef-def-${item.id}`;
+        btn.className = 'w-full p-4 rounded-2xl bg-slate-900 border-2 border-slate-800 hover:border-pink-500 text-left transition-all flex items-start space-x-3 shadow-sm active:scale-98 group';
+        btn.dataset.id = item.id;
+        btn.innerHTML = `
+          <div class="mdef-indicator w-2 h-2 rounded-full bg-slate-600 mt-1.5 flex-shrink-0"></div>
+          <div class="flex-grow">
+            <p class="text-xs sm:text-sm text-slate-200 leading-relaxed font-normal">${item.definition}</p>
+            ${item.formula ? `<span class="mt-1 text-[11px] font-mono text-amber-300/80 block">จุดสังเกต: ${item.formula}</span>` : ''}
+          </div>
+        `;
+        btn.onclick = () => selectDefinitionItem(btn, item.id);
+        rightCol.appendChild(btn);
+      });
+    }
+
+    function selectDefinitionTerm(btn, id) {
+      if (btn.classList.contains('matched')) return;
+      sound.playFlip();
+
+      if (mdefSelectedTerm) {
+        mdefSelectedTerm.classList.remove('border-cyan-400', 'bg-cyan-950/40', 'ring-2', 'ring-cyan-400/50');
+      }
+      mdefSelectedTerm = btn;
+      btn.classList.add('border-cyan-400', 'bg-cyan-950/40', 'ring-2', 'ring-cyan-400/50');
+
+      if (mdefSelectedDef) {
+        checkDefinitionMatch();
+      }
+    }
+
+    function selectDefinitionItem(btn, id) {
+      if (btn.classList.contains('matched')) return;
+      sound.playFlip();
+
+      if (mdefSelectedDef) {
+        mdefSelectedDef.classList.remove('border-pink-400', 'bg-pink-950/40', 'ring-2', 'ring-pink-400/50');
+      }
+      mdefSelectedDef = btn;
+      btn.classList.add('border-pink-400', 'bg-pink-950/40', 'ring-2', 'ring-pink-400/50');
+
+      if (mdefSelectedTerm) {
+        checkDefinitionMatch();
+      }
+    }
+
+    function checkDefinitionMatch() {
+      const termId = mdefSelectedTerm.dataset.id;
+      const defId = mdefSelectedDef.dataset.id;
+
+      if (termId === defId) {
+        // Match!
+        sound.playMatchSuccess();
+        mdefCombo++;
+        document.getElementById('mdef-combo').textContent = `${mdefCombo}x 🔥`;
+
+        [mdefSelectedTerm, mdefSelectedDef].forEach(el => {
+          el.classList.remove('border-cyan-400', 'border-pink-400', 'ring-2', 'bg-cyan-950/40', 'bg-pink-950/40');
+          el.classList.add('matched', 'border-emerald-500/80', 'bg-emerald-950/30', 'opacity-70');
+        });
+
+        mdefSelectedTerm.querySelector('.mdef-status').textContent = '✓ สำเร็จ';
+        mdefSelectedTerm.querySelector('.mdef-status').className = 'text-xs font-semibold px-2 py-1 rounded bg-emerald-900/80 text-emerald-300';
+        mdefSelectedDef.querySelector('.mdef-indicator').className = 'mdef-indicator w-2 h-2 rounded-full bg-emerald-400 mt-1.5 flex-shrink-0';
+
+        mdefMatchedCount++;
+        document.getElementById('mdef-matches-count').textContent = `${mdefMatchedCount} / ${mdefTotalCount}`;
+        mdefSelectedTerm = null;
+        mdefSelectedDef = null;
+
+        if (mdefMatchedCount >= mdefTotalCount) {
+          clearInterval(mdefTimerInterval);
+          sound.playCheer();
+          document.getElementById('mdef-final-time').textContent = document.getElementById('mdef-timer').textContent;
+          document.getElementById('mdef-victory-banner').classList.remove('hidden');
+        }
+      } else {
+        // Mismatch!
+        sound.playError();
+        mdefCombo = 0;
+        document.getElementById('mdef-combo').textContent = `0x 🔥`;
+
+        const t = mdefSelectedTerm;
+        const d = mdefSelectedDef;
+        t.classList.add('border-rose-500', 'animate-shake');
+        d.classList.add('border-rose-500', 'animate-shake');
+
+        setTimeout(() => {
+          t.classList.remove('border-rose-500', 'animate-shake', 'border-cyan-400', 'bg-cyan-950/40', 'ring-2', 'ring-cyan-400/50');
+          d.classList.remove('border-rose-500', 'animate-shake', 'border-pink-400', 'bg-pink-950/40', 'ring-2', 'ring-pink-400/50');
+          mdefSelectedTerm = null;
+          mdefSelectedDef = null;
+        }, 500);
+      }
+    }
+
+    // ================= SPEED QUIZ CONTROLLER =================
+    let sqCurrentIndex = 0;
+    let sqTotalQuestions = 10;
+    let sqScore = 0;
+    let sqCorrectCount = 0;
+    let sqCombo = 0;
+    let sqDeck = [];
+    let sqHasAnswered = false;
+
+    function startSpeedQuiz() {
+      sqCurrentIndex = 0;
+      sqScore = 0;
+      sqCorrectCount = 0;
+      sqCombo = 0;
+      sqHasAnswered = false;
+
+      document.getElementById('sq-score').textContent = "0";
+      document.getElementById('sq-combo').textContent = "0x 🔥";
+      document.getElementById('sq-total-num').textContent = sqTotalQuestions;
+      document.getElementById('sq-summary-modal').classList.add('hidden');
+      document.getElementById('sq-card-box').classList.remove('hidden');
+
+      // Prepare quiz questions
+      const pool = [...VOCAB_DATA].sort(() => Math.random() - 0.5);
+      sqDeck = pool.slice(0, sqTotalQuestions);
+
+      renderQuizQuestion();
+    }
+
+    function renderQuizQuestion() {
+      sqHasAnswered = false;
+      document.getElementById('sq-explanation-box').classList.add('hidden');
+      document.getElementById('sq-question-num').textContent = sqCurrentIndex + 1;
+
+      const currentItem = sqDeck[sqCurrentIndex];
+      // Alternate question types: 50% Full Name, 50% Definition
+      const isFullNameQuiz = sqCurrentIndex % 2 === 0;
+
+      document.getElementById('sq-cat-badge').textContent = currentItem.categoryName;
+      if (isFullNameQuiz) {
+        document.getElementById('sq-type-badge').textContent = "ทายชื่อเต็มภาษาอังกฤษ";
+        document.getElementById('sq-prompt-sub').textContent = `คำย่อ "${currentItem.term}" มีชื่อเต็มว่าอย่างไร?`;
+        document.getElementById('sq-prompt-title').textContent = currentItem.term;
+      } else {
+        document.getElementById('sq-type-badge').textContent = "ทายความหมาย & นิยามข้อสอบ";
+        document.getElementById('sq-prompt-sub').textContent = "นิยามต่อไปนี้ตรงกับคำศัพท์ใด?";
+        document.getElementById('sq-prompt-title').textContent = currentItem.definition;
+      }
+
+      // Generate 4 choices
+      let choices = [];
+      if (isFullNameQuiz) {
+        choices.push({ text: currentItem.fullName, isCorrect: true });
+        // Get 3 incorrect full names
+        const others = VOCAB_DATA.filter(v => v.id !== currentItem.id).sort(() => Math.random() - 0.5);
+        others.slice(0, 3).forEach(o => choices.push({ text: o.fullName, isCorrect: false }));
+      } else {
+        choices.push({ text: currentItem.term, sub: currentItem.fullName, isCorrect: true });
+        const others = VOCAB_DATA.filter(v => v.id !== currentItem.id).sort(() => Math.random() - 0.5);
+        others.slice(0, 3).forEach(o => choices.push({ text: o.term, sub: o.fullName, isCorrect: false }));
+      }
+
+      choices.sort(() => Math.random() - 0.5);
+
+      // Render choice buttons
+      const container = document.getElementById('sq-options-container');
+      container.innerHTML = '';
+
+      choices.forEach((choice, idx) => {
+        const btn = document.createElement('button');
+        btn.className = 'sq-choice-btn w-full p-4 rounded-2xl bg-slate-950 border-2 border-slate-800 hover:border-cyan-500/80 hover:bg-slate-850 text-left transition-all flex items-center space-x-3 active:scale-98';
+        btn.innerHTML = `
+          <div class="choice-tag w-7 h-7 rounded-lg bg-slate-800 text-slate-300 flex items-center justify-center text-xs font-bold font-mono">
+            ${String.fromCharCode(65 + idx)}
+          </div>
+          <div class="flex-grow">
+            <span class="font-display font-medium text-slate-100 text-sm sm:text-base block">${choice.text}</span>
+            ${choice.sub ? `<span class="text-xs text-slate-400 block">${choice.sub}</span>` : ''}
+          </div>
+        `;
+        btn.onclick = () => evaluateQuizChoice(btn, choice.isCorrect, currentItem);
+        container.appendChild(btn);
+      });
+    }
+
+    function evaluateQuizChoice(btn, isCorrect, item) {
+      if (sqHasAnswered) return;
+      sqHasAnswered = true;
+
+      const allBtns = document.querySelectorAll('.sq-choice-btn');
+      allBtns.forEach(b => b.classList.add('cursor-not-allowed'));
+
+      if (isCorrect) {
+        sound.playMatchSuccess();
+        sqCorrectCount++;
+        sqCombo++;
+        const points = 100 + (sqCombo * 20);
+        sqScore += points;
+        document.getElementById('sq-score').textContent = sqScore;
+        document.getElementById('sq-combo').textContent = `${sqCombo}x 🔥`;
+
+        btn.classList.add('border-emerald-500', 'bg-emerald-950/40', 'ring-2', 'ring-emerald-400');
+        btn.querySelector('.choice-tag').className = 'choice-tag w-7 h-7 rounded-lg bg-emerald-500 text-slate-950 flex items-center justify-center text-xs font-bold font-mono';
+        btn.querySelector('.choice-tag').textContent = '✓';
+      } else {
+        sound.playError();
+        sqCombo = 0;
+        document.getElementById('sq-combo').textContent = `0x 🔥`;
+
+        btn.classList.add('border-rose-500', 'bg-rose-950/40', 'animate-shake');
+        btn.querySelector('.choice-tag').className = 'choice-tag w-7 h-7 rounded-lg bg-rose-500 text-white flex items-center justify-center text-xs font-bold font-mono';
+        btn.querySelector('.choice-tag').textContent = '✗';
+      }
+
+      // Show explanation
+      const expBox = document.getElementById('sq-explanation-box');
+      expBox.classList.remove('hidden');
+      document.getElementById('sq-explanation-text').innerHTML = `
+        <strong>${item.term}</strong> (${item.fullName})<br>
+        <span class="text-slate-300">${item.definition}</span>
+        ${item.formula ? `<br><span class="text-amber-300/90 font-mono">สูตร/แนวคิด: ${item.formula}</span>` : ''}
+      `;
+    }
+
+    function nextQuizQuestion() {
+      sqCurrentIndex++;
+      if (sqCurrentIndex < sqTotalQuestions) {
+        renderQuizQuestion();
+      } else {
+        // Quiz Complete
+        sound.playCheer();
+        document.getElementById('sq-card-box').classList.add('hidden');
+        const summary = document.getElementById('sq-summary-modal');
+        summary.classList.remove('hidden');
+        document.getElementById('sq-final-score').textContent = sqScore;
+        document.getElementById('sq-final-correct').textContent = `${sqCorrectCount} / ${sqTotalQuestions}`;
+      }
+    }
+
+    // ================= GLOSSARY CONTROLLER =================
+    function renderGlossary() {
+      const grid = document.getElementById('glossary-grid');
+      grid.innerHTML = '';
+      document.getElementById('glossary-visible-count').textContent = filteredVocab.length;
+
+      if (filteredVocab.length === 0) {
+        grid.innerHTML = `
+          <div class="col-span-full text-center py-12 text-slate-500">
+            <span class="text-4xl block mb-2">🔍</span>
+            <p>ไม่พบคำศัพท์ที่ตรงกับเงื่อนไขการค้นหา</p>
+          </div>
+        `;
+        return;
+      }
+
+      filteredVocab.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'bg-slate-900 border border-slate-800 hover:border-cyan-500/50 rounded-2xl p-5 shadow-sm transition hover:-translate-y-0.5 flex flex-col justify-between';
+        
+        let prioBadge = '';
+        if (item.priority === 'top') {
+          prioBadge = '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/20 text-rose-400 border border-rose-500/30">🔥 Top Hit</span>';
+        } else if (item.priority === 'past') {
+          prioBadge = '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">⭐ ออกสอบจริง</span>';
+        } else {
+          prioBadge = '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-sky-500/20 text-sky-300 border border-sky-500/30">📌 คีย์เวิร์ด</span>';
+        }
+
+        card.innerHTML = `
+          <div>
+            <div class="flex items-center justify-between gap-2 mb-2">
+              <span class="text-[11px] font-mono text-cyan-400 truncate">${item.categoryName}</span>
+              ${prioBadge}
+            </div>
+
+            <div class="flex items-center justify-between mb-1">
+              <h4 class="font-display font-extrabold text-xl text-white tracking-wide">${item.term}</h4>
+              <button onclick="speakEnglish('${item.fullName}')" class="p-1.5 text-slate-400 hover:text-cyan-300 rounded-lg hover:bg-slate-800 text-xs" title="ฟังการออกเสียง">
+                🔊
+              </button>
+            </div>
+
+            <p class="text-xs font-semibold text-indigo-300 mb-3">${item.fullName}</p>
+            <p class="text-xs text-slate-300 leading-relaxed">${item.definition}</p>
+          </div>
+
+          <div class="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between text-[11px] text-slate-400">
+            <span class="text-amber-400 font-mono">📝 ${item.examStats}</span>
+            <button onclick="studySingleCard('${item.id}')" class="text-cyan-400 hover:underline font-medium">
+              เปิดใน Flashcard ➔
+            </button>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    function studySingleCard(id) {
+      const idx = filteredVocab.findIndex(v => v.id === id);
+      if (idx !== -1) {
+        fcIndex = idx;
+        switchView('flashcard');
+        renderCurrentFlashcard();
+      }
+    }
+
+    // Lightweight In-App Toast (Replacement for alert/confirm)
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      
+      let borderCol = 'border-cyan-500/50 text-cyan-200';
+      if (type === 'success') borderCol = 'border-emerald-500/50 text-emerald-200 bg-emerald-950/90';
+      else if (type === 'warning') borderCol = 'border-amber-500/50 text-amber-200 bg-amber-950/90';
+      else borderCol = 'border-slate-700 text-slate-200 bg-slate-900/95';
+
+      toast.className = `pointer-events-auto px-4 py-2.5 rounded-xl border ${borderCol} shadow-2xl backdrop-blur text-xs sm:text-sm font-medium transition-all duration-300 transform translate-y-2 opacity-0 flex items-center space-x-2`;
+      toast.innerHTML = `<span>${message}</span>`;
+      container.appendChild(toast);
+
+      requestAnimationFrame(() => {
+        toast.classList.remove('translate-y-2', 'opacity-0');
+      });
+
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-2');
+        setTimeout(() => toast.remove(), 300);
+      }, 2500);
+    }
+
+    // Initialize application on window load
+    window.addEventListener('load', () => {
+      applyGlobalFilters();
+      renderCurrentFlashcard();
+    });
+  </script>
+</body>
+</html>
